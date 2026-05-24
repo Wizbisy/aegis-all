@@ -156,7 +156,22 @@
         ],
         "responses": {
           "200": {
-            "description": "Token revoked successfully"
+            "description": "Token revoked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
