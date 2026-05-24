@@ -80,12 +80,18 @@
                 "type": "object",
                 "required": [
                   "email",
-                  "otp"
+                  "otp",
+                  "challengeId"
                 ],
                 "properties": {
                   "email": {
                     "type": "string",
                     "format": "email"
+                  },
+                  "challengeId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The ID of the OTP challenge"
                   },
                   "otp": {
                     "type": "string",
