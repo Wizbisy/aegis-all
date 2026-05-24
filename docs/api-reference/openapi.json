@@ -462,7 +462,22 @@
         },
         "responses": {
           "200": {
-            "description": "Bridging request accepted"
+            "description": "Bridging request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -513,7 +528,22 @@
         ],
         "responses": {
           "200": {
-            "description": "Bridge fee estimate retrieved"
+            "description": "Bridge fee estimate retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "feeUsdc": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -546,7 +576,22 @@
         ],
         "responses": {
           "200": {
-            "description": "Attestation status retrieved"
+            "description": "Attestation status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -571,7 +616,25 @@
         ],
         "responses": {
           "200": {
-            "description": "Chains retrieved successfully"
+            "description": "Chains retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "chains": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": []
@@ -594,7 +657,22 @@
         ],
         "responses": {
           "200": {
-            "description": "Gas estimate calculated"
+            "description": "Gas estimate calculated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "estimatedFeeUsdc": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -627,7 +705,22 @@
         ],
         "responses": {
           "200": {
-            "description": "Asset swap executed successfully"
+            "description": "Asset swap executed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "txHash": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -678,7 +771,25 @@
         ],
         "responses": {
           "200": {
-            "description": "Audit trails compiled successfully"
+            "description": "Audit trails compiled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "ledger": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -711,7 +822,36 @@
         ],
         "responses": {
           "200": {
-            "description": "Policy limits and utilization returned successfully"
+            "description": "Policy limits and utilization returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "policy": {
+                      "type": "object",
+                      "properties": {
+                        "perTxLimitUsdc": {
+                          "type": "number"
+                        },
+                        "dailyLimitUsdc": {
+                          "type": "number"
+                        },
+                        "weeklyLimitUsdc": {
+                          "type": "number"
+                        },
+                        "monthlyLimitUsdc": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -747,7 +887,19 @@
         ],
         "responses": {
           "200": {
-            "description": "Webhook notification accepted"
+            "description": "Webhook notification accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Invalid webhook signature"
@@ -903,7 +1055,22 @@
         },
         "responses": {
           "200": {
-            "description": "Service resource details parsed successfully"
+            "description": "Service resource details parsed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "requiredPaymentUsdc": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -936,7 +1103,25 @@
         ],
         "responses": {
           "200": {
-            "description": "Inspect history retrieved successfully"
+            "description": "Inspect history retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -1308,7 +1493,25 @@
         },
         "responses": {
           "200": {
-            "description": "Deposit Initiated Successfully"
+            "description": "Deposit Initiated Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "txHash": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -1379,7 +1582,25 @@
         },
         "responses": {
           "200": {
-            "description": "Withdrawal Initiated Successfully"
+            "description": "Withdrawal Initiated Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "txHash": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           },
           "403": {
             "description": "Withdrawal Locked (MEV Cooldown)"
@@ -1420,31 +1641,108 @@
       "post": {
         "summary": "Register Limit Order",
         "description": "Register a conditional swap order that executes automatically when a target price is reached. The Wealth Sentinel monitors this intent and triggers execution.",
-        "tags": ["Actions API", "Wealth Engine"],
-        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "tags": [
+          "Actions API",
+          "Wealth Engine"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["tokenIn", "tokenOut", "amountIn", "targetPrice", "condition"],
+                "required": [
+                  "tokenIn",
+                  "tokenOut",
+                  "amountIn",
+                  "targetPrice",
+                  "condition"
+                ],
                 "properties": {
-                  "tokenIn": {"type": "string", "example": "USDC"},
-                  "tokenOut": {"type": "string", "example": "EURC"},
-                  "amountIn": {"type": "string", "example": "100.00"},
-                  "targetPrice": {"type": "string", "example": "0.92"},
-                  "condition": {"type": "string", "enum": ["LTE", "GTE"]}
+                  "tokenIn": {
+                    "type": "string",
+                    "example": "USDC"
+                  },
+                  "tokenOut": {
+                    "type": "string",
+                    "example": "EURC"
+                  },
+                  "amountIn": {
+                    "type": "string",
+                    "example": "100.00"
+                  },
+                  "targetPrice": {
+                    "type": "string",
+                    "example": "0.92"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "enum": [
+                      "LTE",
+                      "GTE"
+                    ]
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "Limit order registered successfully"}},
+        "responses": {
+          "200": {
+            "description": "Limit order registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "orderId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "parameters": [
-          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"},
-          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Unique UUID for financial idempotency"},
-          {"name": "X-Aegis-Nonce", "in": "header", "required": true, "schema": {"type": "integer"}, "description": "Current agent nonce"}
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID for financial idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent nonce"
+          }
         ]
       }
     },
@@ -1452,25 +1750,67 @@
       "post": {
         "summary": "Cancel Limit Order",
         "description": "Cancel an active limit order by its UUID.",
-        "tags": ["Actions API", "Wealth Engine"],
-        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "tags": [
+          "Actions API",
+          "Wealth Engine"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["id"],
+                "required": [
+                  "id"
+                ],
                 "properties": {
-                  "id": {"type": "string", "format": "uuid"}
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "Limit order cancelled"}},
+        "responses": {
+          "200": {
+            "description": "Limit order cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "parameters": [
-          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"}
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
         ]
       }
     },
@@ -1478,30 +1818,100 @@
       "post": {
         "summary": "Register DCA Schedule",
         "description": "Register a recurring dollar-cost averaging schedule. The Wealth Sentinel executes each leg automatically at the specified interval.",
-        "tags": ["Actions API", "Wealth Engine"],
-        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "tags": [
+          "Actions API",
+          "Wealth Engine"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["tokenIn", "tokenOut", "amountInPerTx", "frequencyHours"],
+                "required": [
+                  "tokenIn",
+                  "tokenOut",
+                  "amountInPerTx",
+                  "frequencyHours"
+                ],
                 "properties": {
-                  "tokenIn": {"type": "string", "example": "USDC"},
-                  "tokenOut": {"type": "string", "example": "cirBTC"},
-                  "amountInPerTx": {"type": "string", "example": "25.00"},
-                  "frequencyHours": {"type": "integer", "example": 24}
+                  "tokenIn": {
+                    "type": "string",
+                    "example": "USDC"
+                  },
+                  "tokenOut": {
+                    "type": "string",
+                    "example": "cirBTC"
+                  },
+                  "amountInPerTx": {
+                    "type": "string",
+                    "example": "25.00"
+                  },
+                  "frequencyHours": {
+                    "type": "integer",
+                    "example": 24
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "DCA schedule registered successfully"}},
+        "responses": {
+          "200": {
+            "description": "DCA schedule registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "scheduleId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "parameters": [
-          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"},
-          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Unique UUID for financial idempotency"},
-          {"name": "X-Aegis-Nonce", "in": "header", "required": true, "schema": {"type": "integer"}, "description": "Current agent nonce"}
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID for financial idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent nonce"
+          }
         ]
       }
     },
@@ -1509,25 +1919,67 @@
       "post": {
         "summary": "Cancel DCA Schedule",
         "description": "Cancel an active DCA schedule by its UUID.",
-        "tags": ["Actions API", "Wealth Engine"],
-        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "tags": [
+          "Actions API",
+          "Wealth Engine"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["id"],
+                "required": [
+                  "id"
+                ],
                 "properties": {
-                  "id": {"type": "string", "format": "uuid"}
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "DCA schedule cancelled"}},
+        "responses": {
+          "200": {
+            "description": "DCA schedule cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "parameters": [
-          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"}
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
         ]
       }
     },
@@ -1535,29 +1987,102 @@
       "post": {
         "summary": "Multi-Yield Deposit",
         "description": "Split a USDC deposit across the Aegis aUSDC Vault and Synthra V3 concentrated liquidity in a single atomic action. Weights must add up to 100, and synthraWeight is capped at 80.",
-        "tags": ["Actions API", "Wealth Engine"],
-        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "tags": [
+          "Actions API",
+          "Wealth Engine"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["amountUsdc", "aegisWeight", "synthraWeight"],
+                "required": [
+                  "amountUsdc",
+                  "aegisWeight",
+                  "synthraWeight"
+                ],
                 "properties": {
-                  "amountUsdc": {"type": "string", "example": "100.00"},
-                  "aegisWeight": {"type": "integer", "example": 60, "minimum": 0, "maximum": 100},
-                  "synthraWeight": {"type": "integer", "example": 40, "minimum": 0, "maximum": 80}
+                  "amountUsdc": {
+                    "type": "string",
+                    "example": "100.00"
+                  },
+                  "aegisWeight": {
+                    "type": "integer",
+                    "example": 60,
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "synthraWeight": {
+                    "type": "integer",
+                    "example": 40,
+                    "minimum": 0,
+                    "maximum": 80
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "Multi-yield deposit executed"}},
+        "responses": {
+          "200": {
+            "description": "Multi-yield deposit executed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "txHashes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "parameters": [
-          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"},
-          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Unique UUID for financial idempotency"},
-          {"name": "X-Aegis-Nonce", "in": "header", "required": true, "schema": {"type": "integer"}, "description": "Current agent nonce"}
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID for financial idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent nonce"
+          }
         ]
       }
     },
@@ -1565,13 +2090,66 @@
       "post": {
         "summary": "Withdraw from Synthra V3",
         "description": "Close the agent's active Synthra V3 concentrated liquidity position and collect all liquidity plus accrued trading fees back to USDC. No request body required.",
-        "tags": ["Actions API", "Wealth Engine"],
-        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
-        "responses": {"200": {"description": "Synthra V3 position closed and fees collected"}},
+        "tags": [
+          "Actions API",
+          "Wealth Engine"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synthra V3 position closed and fees collected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "txHash": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "parameters": [
-          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"},
-          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Unique UUID for financial idempotency"},
-          {"name": "X-Aegis-Nonce", "in": "header", "required": true, "schema": {"type": "integer"}, "description": "Current agent nonce"}
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID for financial idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent nonce"
+          }
         ]
       }
     },
@@ -1579,11 +2157,51 @@
       "get": {
         "summary": "Get Wealth Intents",
         "description": "Retrieve all active limit orders and DCA schedules for the authenticated agent, including their current status (PENDING, EXECUTED, CANCELLED).",
-        "tags": ["Actions API", "Wealth Engine"],
-        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
-        "responses": {"200": {"description": "Wealth intents ledger retrieved"}},
+        "tags": [
+          "Actions API",
+          "Wealth Engine"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wealth intents ledger retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "intents": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "parameters": [
-          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"}
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
         ]
       }
     },
@@ -1591,11 +2209,51 @@
       "get": {
         "summary": "Get Wealth Metrics",
         "description": "Retrieve portfolio performance metrics for the authenticated agent, including total deposits, current value, yield earned, and active position breakdown across Aegis Vault and Synthra V3.",
-        "tags": ["Actions API", "Wealth Engine"],
-        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
-        "responses": {"200": {"description": "Portfolio metrics retrieved"}},
+        "tags": [
+          "Actions API",
+          "Wealth Engine"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Portfolio metrics retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "totalDeposited": {
+                      "type": "string"
+                    },
+                    "currentValue": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "parameters": [
-          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"}
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
         ]
       }
     }
