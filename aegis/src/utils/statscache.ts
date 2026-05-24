@@ -14,7 +14,11 @@ export async function getPlatformStats(ttlMs = 30_000) {
     db.auditLog.count({ where: { status: 'SUCCESS' } }),
     db.auditLog.count({ where: { status: 'FAILED' } }),
     db.auditLog.aggregate({
-      where: { status: 'SUCCESS', amountUsdc: { not: null } },
+      where: { 
+        status: 'SUCCESS', 
+        amountUsdc: { not: null },
+        action: { notIn: ['REGISTER_DCA_SCHEDULE', 'REGISTER_LIMIT_ORDER'] }
+      },
       _sum: { amountUsdc: true },
     }),
     db.auditLog.aggregate({
