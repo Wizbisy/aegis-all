@@ -1,0 +1,159 @@
+---
+title: 'API Reference'
+description: 'Complete reference for all Aegis API endpoints'
+---
+
+## API Reference
+
+The Aegis API provides a REST interface for AI agents to manage wallets, execute USDC transactions, discover paid services via the x402 protocol, and interact with DeFi on the Arc Network.
+
+## Base URL
+
+```
+https://api.aegisintent.xyz
+```
+
+All endpoints are relative to this base URL.
+
+## Authentication
+
+All authenticated endpoints require two headers:
+
+```
+Authorization: Bearer aegis_live_wzm79d9Jzd7LMY4...
+X-Aegis-Email: your-agent@example.com
+```
+
+Obtain a token through the [Connect API](/api-reference/connect/start). Tokens expire after **30 days**. Both headers must match the same agent record or the request is rejected.
+
+## Request Format
+
+Send all request bodies as JSON. Include the following header:
+
+```
+Content-Type: application/json
+```
+
+## Response Format
+
+All responses follow a consistent envelope structure:
+
+```json
+{
+  "success": true,
+  "result": { ... }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` on success, `false` on error |
+| `result` | object | Response payload (on success) |
+| `error` | string | Human-readable error message (on failure) |
+| `code` | string | Machine-readable error code (on failure) |
+
+**Error response:**
+
+```json
+{
+  "success": false,
+  "error": "Unauthorized: Invalid token",
+  "code": "UNAUTHORIZED"
+}
+```
+
+## Rate Limits
+
+| Scope | Limit | Window |
+|-------|-------|--------|
+| Connect API | 10 requests | per 10 minutes per IP |
+| Actions API | 120 requests | per minute per agent |
+| Marketplace API | 90 requests | per minute per agent |
+| Policy API | 60 requests | per minute per agent |
+
+Exceeding a limit returns `429 Too Many Requests`.
+
+## Idempotency
+
+For financial operations (`transfer`, `pay`, `bridge`, `swap`), include an `Idempotency-Key` header to prevent duplicate transactions:
+
+```
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+```
+
+If you repeat a request with the same key, the API returns the original response instead of executing the operation again. Keys must be valid UUID v4 values.
+
+## Financial Action Headers
+
+Financial mutations require two additional headers beyond standard authentication:
+
+| Header | Type | Description |
+|--------|------|-------------|
+| `Idempotency-Key` | UUID v4 | Prevents duplicate execution on retries |
+| `X-Aegis-Nonce` | integer | Agent's current action nonce (increments per action) |
+
+## Endpoint Groups
+
+### Connect API
+Agent onboarding, token issuance, and token revocation.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/v1/connect/start` | Request an email verification OTP |
+| `POST` | `/v1/connect/complete` | Submit OTP to receive API token + wallet |
+| `POST` | `/v1/connect/revoke` | Revoke all active tokens |
+
+### Actions API
+Wallet operations, USDC transfers, x402 payments, bridging, swaps, yield, wealth management, and audit.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/actions/wallet` | Get agent wallet ID and address |
+| `GET` | `/v1/actions/balance` | Get wallet balances across all chains |
+| `GET` | `/v1/actions/nonce` | Get current action nonce |
+| `GET` | `/v1/actions/policy` | Get agent spending policy limits |
+| `POST` | `/v1/actions/transfer` | Send USDC to an EVM address |
+| `POST` | `/v1/actions/pay` | Execute an x402 micropayment |
+| `POST` | `/v1/actions/bridge` | Bridge USDC cross-chain via CCTP |
+| `POST` | `/v1/actions/bridge/fee` | Get bridge fee estimate |
+| `POST` | `/v1/actions/bridge/status` | Check bridge transaction status |
+| `GET` | `/v1/actions/bridge/chains` | List supported bridge chains |
+| `POST` | `/v1/actions/swap` | Execute a token swap |
+| `POST` | `/v1/actions/swap/estimate` | Get swap quote |
+| `GET` | `/v1/actions/swap/history` | Get swap transaction history |
+| `POST` | `/v1/actions/estimate/transfer` | Estimate transfer gas cost |
+| `POST` | `/v1/actions/estimate/pay` | Estimate x402 payment cost |
+| `POST` | `/v1/actions/estimate/bridge` | Estimate bridge cost |
+| `GET` | `/v1/actions/yield/vaults` | List available yield vaults |
+| `GET` | `/v1/actions/yield/vault` | Get live vault state and APY |
+| `GET` | `/v1/actions/yield/balance` | Get agent yield balance (aUSDC shares) |
+| `POST` | `/v1/actions/yield/deposit` | Deposit USDC into yield vault |
+| `POST` | `/v1/actions/yield/withdraw` | Withdraw aUSDC shares for USDC + yield |
+| `POST` | `/v1/actions/wealth/limitOrder` | Register a conditional limit order |
+| `POST` | `/v1/actions/wealth/limitOrder/cancel` | Cancel an active limit order |
+| `POST` | `/v1/actions/wealth/dca` | Register a DCA schedule |
+| `POST` | `/v1/actions/wealth/dca/cancel` | Cancel an active DCA schedule |
+| `POST` | `/v1/actions/wealth/multiYield` | Split deposit across Aegis Vault + Synthra V3 |
+| `POST` | `/v1/actions/wealth/yield/synthra/withdraw` | Close Synthra V3 position |
+| `GET` | `/v1/actions/wealth/intents` | View all active wealth intents |
+| `GET` | `/v1/actions/wealth/metrics` | View portfolio performance metrics |
+| `GET` | `/v1/actions/audit/ledger` | Generate tax compliance ledger |
+| `POST` | `/v1/actions/audit/harvest` | Run tax loss harvesting |
+
+### Marketplace API (x402)
+Discover, inspect, and track paid API services.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/v1/marketplace/search` | Search for x402 services by keyword or category |
+| `POST` | `/v1/marketplace/inspect` | Inspect a service's payment requirements |
+| `GET` | `/v1/marketplace/history` | View marketplace interaction history |
+
+### Policy API
+View agent spending limits.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/policy` | Get current spending policy limits |
+
+For detailed feature guides, see: [Yield](/features/yield), [Wealth Engine](/features/wealth-engine), and [Tax Harvesting](/features/tax-harvesting).

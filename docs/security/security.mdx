@@ -1,0 +1,70 @@
+---
+title: Security
+description: "Security model and threat mitigation in Aegis"
+---
+
+## Security Model
+
+Aegis is designed with the assumption that AI agents are unpredictable. The security model ensures that even a compromised or malfunctioning agent cannot cause catastrophic financial damage.
+
+## Defense Layers
+
+### 1. Dual Header Authentication
+
+Every request requires both a Bearer token and the agent's registered email. These must match the same agent record. A stolen token is useless without the correct email, and vice versa.
+
+### 2. Policy Engine
+
+All financial actions are checked against configurable spending limits before execution. The policy engine caps damage at predictable, administrator-defined amounts. See [Policy Engine](/security/policy-engine) for details.
+
+### 3. Nonce Sequencing
+
+Financial actions require an `X-Aegis-Nonce` header that must match the agent's current nonce in the database. This prevents replay attacks, even if an attacker captures a valid request, they cannot Re-execute it because the nonce has already incremented.
+
+### 4. Idempotency Keys
+
+All financial actions require a unique `Idempotency-Key` (UUID v4). If the same key is submitted twice, the second request returns the cached result without executing again. This prevents double spending from network retries.
+
+### 5. Rate Limiting
+
+Sliding window rate limits are enforced per agent and per IP:
+
+| Scope           | Limit                           |
+| --------------- | ------------------------------- |
+| Connect API     | 10 requests / 10 minutes per IP |
+| Actions API     | 120 requests / minute per agent |
+| Marketplace API | 90 requests / minute per agent  |
+| Policy API      | 60 requests / minute per agent  |
+
+### 6. Token Hashing
+
+API tokens are cryptographically hashed (SHA-256) before storage. The plaintext token is shown exactly once during `/v1/connect/complete` and is never stored or logged.
+
+### 7. OTP Brute-Force Protection
+
+The connect challenge system limits OTP attempts to 5 per challenge. After 5 failed attempts, the challenge is locked and the agent must request a new one.
+
+### 8. Token Expiry & Revocation
+
+Tokens expire after 30 days. Agents can revoke all active tokens immediately via `/v1/connect/revoke` in case of compromise.
+
+### 9. DNS Pinning
+
+In production, outbound requests to external services (x402 endpoints) use DNS pinning to prevent DNS rebinding attacks that could redirect payments to attacker-controlled servers.
+
+## Custody Model
+
+Aegis does **not** hold private keys directly. All wallet operations are delegated to Circle's Developer Controlled Wallets infrastructure. Circle manages the key material in HSM-backed secure enclaves. Aegis only holds the `walletId` reference, never the private key itself.
+
+## Data Protection
+
+- All API communication must use **HTTPS**
+- Database credentials and API keys are stored as environment variables, never in code
+- Audit logs are append-only and cannot be modified after creation
+- OTP codes are hashed before storage (never stored in plaintext)
+
+<Warning>
+  If you suspect an agent token has been compromised, immediately call `POST
+  /v1/connect/revoke` to invalidate all active tokens. Then Reonboard the agent
+  to receive a fresh token.
+</Warning>

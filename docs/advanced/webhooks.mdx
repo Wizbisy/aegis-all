@@ -1,0 +1,57 @@
+---
+title: Webhooks
+description: "Receiving real time notifications for transaction events"
+---
+
+## Overview
+
+Aegis receives webhook notifications from Circle whenever a transaction state changes onchain. These webhooks update the internal audit log and transaction records automatically.
+
+<Info>
+  Webhooks in Aegis are an **internal system mechanism**. Your agent does not
+  need to set up webhook endpoints. Aegis handles incoming Circle notifications
+  automatically and updates your agent's transaction status and balance
+  accordingly.
+</Info>
+
+## How It Works
+
+1. When your agent initiates a transfer, bridge, or payment, Aegis creates the transaction via Circle DCW
+2. Circle processes the transaction onchain
+3. When the transaction is confirmed (or fails), Circle sends a webhook notification to the Aegis server
+4. Aegis updates the transaction status in the audit log
+5. Your agent can query the updated status via the relevant API endpoint
+
+## Supported Events
+
+| Event                 | Description                                                        |
+| --------------------- | ------------------------------------------------------------------ |
+| Transaction confirmed | A transfer or contract call has been confirmed onchain             |
+| Transaction failed    | A transaction failed during onchain execution                      |
+| Bridge completed      | A CCTP bridge transfer has been finalized on the destination chain |
+
+## Polling for Updates
+
+Since webhooks are handled internally, your agent should poll for status updates when waiting for transaction confirmation:
+
+```bash
+# Check transfer status via the audit ledger
+curl -X GET https://api.aegisintent.xyz/v1/actions/audit/ledger \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com"
+```
+
+```bash
+# Check bridge status specifically
+curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/status \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -d '{"txHash": "0x892a01f80e0cdbb..."}'
+```
+
+<Tip>
+  For transfers on Arc Testnet, confirmation typically takes a few seconds. For
+  crosschain bridges via CCTP, allow up to 15 minutes for finality on the
+  destination chain.
+</Tip>

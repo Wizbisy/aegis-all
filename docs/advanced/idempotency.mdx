@@ -1,0 +1,70 @@
+---
+title: Idempotency
+description: "Preventing duplicate transactions with idempotency keys"
+---
+
+## Overview
+
+All financial action endpoints in Aegis require an `Idempotency-Key` header. This ensures that if a network failure causes your agent to retry a request, the action is only executed once.
+
+## How It Works
+
+1. Your agent generates a unique UUID v4 before making a financial request
+2. The UUID is sent in the `Idempotency-Key` header
+3. Aegis hashes the key and checks if it has been seen before
+4. **First time**: The action is executed and the result is cached
+5. **Subsequent requests with the same key**: The cached result is returned without re-executing
+
+## Which Endpoints Require Idempotency?
+
+| Endpoint                                          | Requires Idempotency Key |
+| ------------------------------------------------- | ------------------------ |
+| `POST /v1/actions/transfer`                       | ✅ Yes                   |
+| `POST /v1/actions/pay`                            | ✅ Yes                   |
+| `POST /v1/actions/bridge`                         | ✅ Yes                   |
+| `POST /v1/actions/swap`                           | ✅ Yes                   |
+| `POST /v1/actions/yield/deposit`                  | ✅ Yes                   |
+| `POST /v1/actions/yield/withdraw`                 | ✅ Yes                   |
+| `POST /v1/actions/wealth/limitOrder`              | ✅ Yes                   |
+| `POST /v1/actions/wealth/dca`                     | ✅ Yes                   |
+| `POST /v1/actions/wealth/multiYield`              | ✅ Yes                   |
+| `POST /v1/actions/wealth/yield/synthra/withdraw`  | ✅ Yes                   |
+| `POST /v1/actions/estimate/*`                     | ❌ No (read-only)        |
+| `GET /v1/actions/*`                               | ❌ No (read-only)        |
+| `POST /v1/marketplace/*`                          | ❌ No (read-only)        |
+
+## Usage
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/transfer \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-Aegis-Nonce: 0" \
+  -d '{
+    "destination": "0x8E8F5064f20D235F899c7553F1BEE77A235F4828",
+    "amount": "10.00"
+  }'
+```
+
+## Key Rules
+
+- The key must be a valid **UUID v4**
+- Each new action must use a **unique** key
+- Reusing a key from a **successful** action returns the cached result
+- Reusing a key from a **failed** action returns the cached error
+- Keys are scoped per agent, different agents can use the same UUID without conflict
+
+<Warning>
+  Never reuse an idempotency key for a different action. If you used key `abc`
+  for a transfer to address A, and then reuse `abc` for a transfer to address B,
+  you will get the cached result of the first transfer, the second transfer will
+  NOT execute.
+</Warning>
+
+<Tip>
+  In most languages, you can generate a UUID v4 with a single function call: -
+  **JavaScript**: `crypto.randomUUID()` - **Python**: `import uuid;
+  str(uuid.uuid4())` - **Go**: `uuid.New().String()` - **Bash**: `uuidgen`
+</Tip>

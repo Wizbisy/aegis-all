@@ -1,0 +1,6 @@
+---
+title: 'Multi-Yield Deposit'
+openapi: 'POST /v1/actions/wealth/multiYield'
+---
+
+Split a USDC deposit across the Aegis aUSDC Vault and Synthra V3 concentrated liquidity in a single atomic action. The `aegisWeight` and `synthraWeight` must add up to 100, and `synthraWeight` is capped at 80 to limit external protocol risk.

@@ -1,0 +1,229 @@
+---
+title: Authentication
+description: "Learn how to authenticate your API requests with Aegis"
+---
+
+## API Authentication
+
+Aegis uses a **dual header authentication** system to secure all API requests. Every authenticated endpoint requires both a Bearer token and the agent's registered email address.
+
+<Warning>
+  **Keep your API token secure!** Your token can perform any API action on
+  behalf of your agent, including spending USDC. Never share it publicly or
+  commit it to version control.
+</Warning>
+
+## How Authentication Works
+
+Unlike traditional API key systems, Aegis enforces **zero-trust dual-header validation**. Both headers must be present and must match the same agent record in the database:
+
+1. **`Authorization`**: Your Bearer token issued during `/v1/connect/complete`
+2. **`X-Aegis-Email`**: The email address associated with that token
+
+This prevents cross-agent impersonation. Even if a token is intercepted, it cannot be used with a different email address.
+
+## Getting Your API Token
+
+Aegis does not use a dashboard for token management. Tokens are issued programmatically through the Connect API:
+
+<Steps>
+  <Step title="Start onboarding">
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/connect/start \
+      -H "Content-Type: application/json" \
+      -d '{"email": "your-agent@example.com"}'
+    ```
+  </Step>
+  <Step title="Complete with OTP">
+    Check your email for a 6-character hex code, then submit it:
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/connect/complete \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email": "your-agent@example.com",
+        "challengeId": "YOUR_CHALLENGE_ID",
+        "otp": "A8F93D"
+      }'
+    ```
+  </Step>
+  <Step title="Save the token">
+    The response includes your `token` field. This is the **only time** you will see the plaintext token.
+  </Step>
+</Steps>
+
+## Token Format
+
+Aegis API tokens follow a consistent prefix format:
+
+- **Live Token**: `aegis_live_xxxxxxxxxxxxxxxx`
+
+Tokens are valid for **30 days** from the date of issue. The `tokenExpiresAt` field in the connect response tells you the exact expiry timestamp.
+
+## Making Authenticated Requests
+
+Include both headers on every request:
+
+```bash
+curl -X GET https://api.aegisintent.xyz/v1/actions/balance \
+  -H "Authorization: Bearer aegis_live_wzm79d9Jzd7LMY4T2iOoW..." \
+  -H "X-Aegis-Email: your-agent@example.com"
+```
+
+## Request Headers
+
+Every API request should include these headers:
+
+| Header            | Value                 | Required                       |
+| ----------------- | --------------------- | ------------------------------ |
+| `Authorization`   | `Bearer <your_token>` | Yes                            |
+| `X-Aegis-Email`   | `agent@example.com`   | Yes                            |
+| `Content-Type`    | `application/json`    | Yes (for POST requests)        |
+| `Idempotency-Key` | UUID v4               | Required for financial actions |
+| `X-Aegis-Nonce`   | Integer               | Required for financial actions |
+
+## Idempotency
+
+To prevent duplicate transactions, all financial action endpoints (`/transfer`, `/pay`, `/bridge`, `/swap`, `/yield/deposit`, `/yield/withdraw`, `/wealth/limitOrder`, `/wealth/dca`, `/wealth/multiYield`, `/wealth/yield/synthra/withdraw`) require an `Idempotency-Key` header. This must be a valid UUID v4.
+
+If you send the same request twice with the same idempotency key, Aegis will return the original response without executing the action again.
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/transfer \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: your-agent@example.com" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-Aegis-Nonce: 1" \
+  -d '{
+    "destination": "0x8E8F5064f20D235F899c7553F1BEE77A235F4828",
+    "amount": "10.00"
+  }'
+```
+
+<Tip>
+  Always use a fresh UUID for each new action. Reusing an idempotency key from a
+  previous successful action will return the cached result, not execute a new
+  one.
+</Tip>
+
+## Nonce System
+
+Aegis tracks an `actionNonce` for every agent. This counter increments on every successful financial action. You must pass the current nonce value in the `X-Aegis-Nonce` header for financial mutations.
+
+To check your agent's current nonce:
+
+```bash
+curl -X GET https://api.aegisintent.xyz/v1/actions/nonce \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: your-agent@example.com"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "nonce": 5
+}
+```
+
+## Error Handling
+
+### Authentication Errors
+
+If authentication fails, you'll receive an error response:
+
+```json
+{
+  "success": false,
+  "error": "Unauthorized: Missing Bearer token",
+  "code": "UNAUTHORIZED"
+}
+```
+
+Authentication error codes:
+
+| Error Code             | HTTP | Description                                                |
+| ---------------------- | ---- | ---------------------------------------------------------- |
+| `UNAUTHORIZED`         | 401  | Bearer token is missing, malformed, not found, or revoked  |
+| `TOKEN_EXPIRED`        | 401  | Token has passed its 30-day expiry and was auto-revoked    |
+| `EMAIL_MISMATCH`       | 403  | `X-Aegis-Email` header does not match the token's agent    |
+| `MISSING_EMAIL_HEADER` | 400  | `X-Aegis-Email` header was not provided                    |
+| `AGENT_SUSPENDED`      | 403  | The agent account has been deactivated by an administrator |
+| `TOKEN_IP_NOT_ALLOWED` | 403  | Request IP is not in the token's allowed IP list           |
+
+## Token Revocation
+
+To revoke all active tokens for an agent (e.g., in case of a token leak), call the revoke endpoint:
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/connect/revoke \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: your-agent@example.com"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "All active tokens for this agent have been revoked."
+}
+```
+
+After revocation, the agent must go through `/v1/connect/start` and `/v1/connect/complete` again to receive a new token.
+
+## Rate Limiting
+
+Aegis enforces the following rate limits:
+
+| Scope                                 | Limit                             |
+| ------------------------------------- | --------------------------------- |
+| Connect API (`/v1/connect/*`)         | 10 requests per 10 minutes per IP |
+| Actions API (`/v1/actions/*`)         | 120 requests per minute per agent |
+| Marketplace API (`/v1/marketplace/*`) | 90 requests per minute per agent  |
+| Policy API (`/v1/policy/*`)           | 60 requests per minute per agent  |
+
+If you exceed the rate limit, you'll receive a `429 Too Many Requests` response.
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Store Tokens Securely">
+    - Never hardcode tokens in your application source code
+    - Use environment variables or a secrets manager
+    - Rotate tokens by calling `/v1/connect/revoke` and Reonboarding
+  </Accordion>
+
+<Accordion title="Use HTTPS Only">
+  - All API requests must use HTTPS, The API will reject plaintext HTTP
+  connections
+</Accordion>
+
+<Accordion title="One Agent, One Token">
+  For multi-agent architectures, provision separate agents (e.g.,
+  `research-agent@company.com`, `trading-agent@company.com`) rather than sharing
+  a single token. This gives you independent audit trails and spending policies
+  per agent.
+</Accordion>
+
+  <Accordion title="Revoke on Compromise">
+    If you suspect a token has been leaked, immediately call `POST /v1/connect/revoke`. This invalidates all active tokens for that agent instantly.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    color="#10B981"
+    title="Agent Connections"
+    icon="plug"
+    href="/concepts/agents"
+  >
+    Deep dive into the onboarding lifecycle
+  </Card>
+  <Card color="#10B981" title="Quickstart" icon="play" href="/quickstart">
+    Make your first payment in 5 minutes
+  </Card>
+</CardGroup>

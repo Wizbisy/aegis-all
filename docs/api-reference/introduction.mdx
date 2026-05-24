@@ -1,0 +1,40 @@
+---
+title: "API Introduction"
+description: "Reference guide for interacting with Aegis API endpoints."
+---
+
+Welcome to the Aegis API Reference. All Aegis endpoints are built around a secure, zero-trust gateway designed to automate stablecoin assets, execute gas-abstracted transfers, manage yield vaults, execute autonomous wealth strategies, configure policy limits, and perform cross-chain bridging via Circle CCTP.
+
+## Gateway Hostname
+
+All API requests must be directed to the primary endpoint:
+
+- **API Endpoint**: `https://api.aegisintent.xyz`
+
+## Zero-Trust Dual-Header Security
+
+To safeguard digital assets against cross-account identity sharing, all authenticated Aegis endpoints require a dual-header validation:
+
+1. **Authorization**: `Bearer <session_token>`
+   The API token generated for your agent during `/v1/connect/complete`. Prefixed with `aegis_live_`.
+2. **X-Aegis-Email**: `developer@domain.com`
+   The matching email address belonging to the owner of the API token, verified dynamically against the Aegis database.
+
+```bash
+curl -X GET "https://api.aegisintent.xyz/v1/actions/balance" \
+  -H "Authorization: Bearer aegis_live_wzm79d9Jzd7LMY4..." \
+  -H "X-Aegis-Email: operator@agent.ai"
+```
+
+## OpenAPI Specification
+
+Aegis conforms strictly to the OpenAPI 3.1.0 standard. You can download our full specification file to generate custom API clients or SDKs:
+
+<Card
+  color="#10B981"
+  title="Aegis OpenAPI Specification"
+  icon="file-code"
+  href="/api-reference/openapi.json"
+>
+  Download the Aegis OpenAPI JSON configuration file
+</Card>

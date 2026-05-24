@@ -1,0 +1,86 @@
+---
+title: CrossChain Bridging
+description: "Bridge USDC across chains using Circle CCTP"
+---
+
+## CrossChain Bridging (CCTP)
+
+Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable AI agents to bridge USDC between supported blockchain networks. This allows agents operating on the Arc Network to move funds to and from other testnet chains like Base Sepolia, Ethereum Sepolia, Arbitrum Sepolia, and more.
+
+## How It Works
+
+<Steps>
+  <Step title="Check supported chains">
+    Query the available destination chains:
+
+    ```bash
+    curl -X GET https://api.aegisintent.xyz/v1/actions/bridge/chains \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -H "X-Aegis-Email: agent@example.com"
+    ```
+
+  </Step>
+
+  <Step title="Get a fee estimate">
+    Check the bridging fee for a specific destination chain:
+
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/fee \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -H "X-Aegis-Email: agent@example.com" \
+      -H "Content-Type: application/json" \
+      -d '{"toChain": "BASE-SEPOLIA"}'
+    ```
+
+  </Step>
+
+  <Step title="Execute the bridge">
+    Submit the bridge transaction:
+
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/actions/bridge \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -H "X-Aegis-Email: agent@example.com" \
+      -H "Content-Type: application/json" \
+      -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+      -H "X-Aegis-Nonce: 0" \
+      -d '{
+        "toChain": "BASE-SEPOLIA",
+        "amount": "50.00"
+      }'
+    ```
+
+  </Step>
+
+  <Step title="Track bridge status">
+    Monitor the bridge progress using the transaction hash:
+
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/status \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -H "X-Aegis-Email: agent@example.com" \
+      -H "Content-Type: application/json" \
+      -d '{"txHash": "0x892a01f80e0cdbb..."}'
+    ```
+
+  </Step>
+</Steps>
+
+## Bridge Parameters
+
+| Field       | Type   | Required | Description                                          |
+| ----------- | ------ | -------- | ---------------------------------------------------- |
+| `toChain`   | string | Yes      | Destination chain name (e.g. `"BASE-SEPOLIA"`, `"ETH-SEPOLIA"`) |
+| `amount`    | string | Yes      | Amount of USDC to bridge                             |
+| `fromChain` | string | No       | Source chain (defaults to Arc)                       |
+| `recipient` | string | No       | Destination address (defaults to agent's own wallet) |
+
+## Related Endpoints
+
+| Endpoint                      | Method | Description                              |
+| ----------------------------- | ------ | ---------------------------------------- |
+| `/v1/actions/bridge/chains`   | GET    | List supported destination chains        |
+| `/v1/actions/bridge/fee`      | POST   | Get fee estimate for a destination chain |
+| `/v1/actions/bridge`          | POST   | Execute a bridge transfer                |
+| `/v1/actions/bridge/status`   | POST   | Check the status of a bridge transaction |
+| `/v1/actions/estimate/bridge` | POST   | Dry-run bridge cost estimation           |

@@ -1,0 +1,1598 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Aegis Secure API",
+    "description": "Zero-trust API for Developer-Controlled Wallets (DCW) and programmatic Policy Engine controls.",
+    "license": {
+      "name": "MIT"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.aegisintent.xyz",
+      "description": "Production API Server"
+    }
+  ],
+  "paths": {
+    "/v1/connect/start": {
+      "post": {
+        "summary": "Start Onboarding / OTP Flow",
+        "description": "Initiate session flow for onboarding a new user or agent wallet by sending an email verification code (OTP).",
+        "tags": [
+          "Connect API"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's or agent's email address to verify"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/v1/connect/complete": {
+      "post": {
+        "summary": "Complete Onboarding",
+        "description": "Verify the sent email OTP challenge and return a secure Bearer token linked to the user's database and wallet record.",
+        "tags": [
+          "Connect API"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "otp"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "otp": {
+                    "type": "string",
+                    "description": "6-digit verification code"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Onboarding complete and token generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "token": {
+                      "type": "string"
+                    },
+                    "agent": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "walletAddress": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/v1/connect/revoke": {
+      "post": {
+        "summary": "Revoke Connection Token",
+        "description": "Revokes the active Bearer session token immediately.",
+        "tags": [
+          "Connect API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token revoked successfully"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/wallet": {
+      "get": {
+        "summary": "Get Wallet Details",
+        "description": "Retrieve the cryptographic smart wallet metadata associated with the authenticated profile.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet metadata retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "wallet": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "address": {
+                          "type": "string"
+                        },
+                        "blockchain": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/balance": {
+      "get": {
+        "summary": "Get Wallet Balances",
+        "description": "Retrieve live stablecoin balances (USDC and EURC) directly from the blockchain relayer.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balances retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "balances": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "token": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "string"
+                          },
+                          "decimals": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/transfer": {
+      "post": {
+        "summary": "Execute Safe Transfer",
+        "description": "Executes a secure gas-abstracted stablecoin transfer, pre-validated against cumulative limits in the Policy Engine.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "recipientAddress",
+                  "amount",
+                  "token"
+                ],
+                "properties": {
+                  "recipientAddress": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string",
+                    "enum": [
+                      "USDC",
+                      "EURC"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transfer initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "txHash": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID v4 for idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent action nonce"
+          }
+        ]
+      }
+    },
+    "/v1/actions/bridge": {
+      "post": {
+        "summary": "Execute Cross-Chain Bridge",
+        "description": "Perform cross-chain stablecoin bridging via Circle CCTP with gas relay assistance.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "token",
+                  "sourceChain",
+                  "destinationChain",
+                  "recipientAddress"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "string"
+                  },
+                  "token": {
+                    "type": "string",
+                    "enum": [
+                      "USDC",
+                      "EURC"
+                    ]
+                  },
+                  "sourceChain": {
+                    "type": "string"
+                  },
+                  "destinationChain": {
+                    "type": "string"
+                  },
+                  "recipientAddress": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bridging request accepted"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID v4 for idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent action nonce"
+          }
+        ]
+      }
+    },
+    "/v1/actions/bridge/fee": {
+      "post": {
+        "summary": "Estimate Bridge Fee",
+        "description": "Retrieve estimated relayer gas fees for a proposed cross-chain bridge transfer.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bridge fee estimate retrieved"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/bridge/status": {
+      "post": {
+        "summary": "Check Bridge Status",
+        "description": "Poll the consensus and Circle attestation state of an active cross-chain bridge operation.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attestation status retrieved"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/bridge/chains": {
+      "get": {
+        "summary": "Get Supported Bridging Chains",
+        "description": "Retrieve all source and destination networks supported by Aegis's CCTP router.",
+        "tags": [
+          "Actions API"
+        ],
+        "responses": {
+          "200": {
+            "description": "Chains retrieved successfully"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/v1/actions/estimate/transfer": {
+      "post": {
+        "summary": "Estimate Transfer parameters",
+        "description": "Verify recipient address formatting and retrieve real time gas costs for onchain stablecoin transfer.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gas estimate calculated"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/swap": {
+      "post": {
+        "summary": "Execute Swap",
+        "description": "Swap between USDC, EURC, and cirBTC directly inside the secure Developer-Controlled Wallet via Circle App Kit.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Asset swap executed successfully"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID v4 for idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent action nonce"
+          }
+        ]
+      }
+    },
+    "/v1/actions/audit/ledger": {
+      "get": {
+        "summary": "Retrieve Audit Ledger",
+        "description": "Retrieve the full tax compliance ledger with FIFO cost-basis accounting for all historical trades.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit trails compiled successfully"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/policy": {
+      "get": {
+        "summary": "Get Policy Limits",
+        "description": "Retrieve active transaction boundaries and current cumulative limit utilization from the Policy Engine.",
+        "tags": [
+          "Policy API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policy limits and utilization returned successfully"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/webhooks/circle": {
+      "post": {
+        "summary": "Receive Circle Webhook Events",
+        "description": "Secure endpoint to process real-time notifications from Circle. Validates authenticity using a robust, constant-time HMAC-SHA256 comparison.",
+        "tags": [
+          "Webhooks API"
+        ],
+        "parameters": [
+          {
+            "name": "circle-signature",
+            "in": "header",
+            "required": true,
+            "description": "HMAC-SHA256 signature calculated over raw body using webhooks secret",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook notification accepted"
+          },
+          "401": {
+            "description": "Invalid webhook signature"
+          }
+        }
+      }
+    },
+    "/v1/marketplace/search": {
+      "post": {
+        "summary": "Search Marketplace Catalog",
+        "description": "Query, paginate, and search the Circle Marketplace service resources catalog by keyword, type, or category.",
+        "tags": [
+          "Marketplace API (x402)"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyword": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "maximum": 50
+                  },
+                  "offset": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Marketplace services searched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "services": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "offset": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/marketplace/inspect": {
+      "post": {
+        "summary": "Inspect Service Resource",
+        "description": "Inspect and parse pricing, routing details, and payment parameters for a given Marketplace service URL.",
+        "tags": [
+          "Marketplace API (x402)"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "serviceUrl"
+                ],
+                "properties": {
+                  "serviceUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "GET",
+                      "POST",
+                      "PUT",
+                      "DELETE",
+                      "PATCH"
+                    ]
+                  },
+                  "data": {
+                    "type": "object"
+                  },
+                  "headers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Service resource details parsed successfully"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/marketplace/history": {
+      "get": {
+        "summary": "Get Inspect History",
+        "description": "Retrieve the historic catalog inspection log records for the authenticated agent.",
+        "tags": [
+          "Marketplace API (x402)"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inspect history retrieved successfully"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/pay": {
+      "post": {
+        "summary": "Execute x402 Micropayment",
+        "description": "Autonomously executes a payment to a service endpoint using the agent's USDC wallet on the Arc Network.",
+        "operationId": "payForService",
+        "tags": [
+          "Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID for financial idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent nonce"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "serviceUrl",
+                  "maxAmount"
+                ],
+                "properties": {
+                  "serviceUrl": {
+                    "type": "string",
+                    "example": "https://api.circle.com/v2/x402/discovery/resources"
+                  },
+                  "maxAmount": {
+                    "type": "string",
+                    "example": "1.50"
+                  },
+                  "method": {
+                    "type": "string",
+                    "example": "GET"
+                  },
+                  "data": {
+                    "type": "object"
+                  },
+                  "headers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "Accept: application/json"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment successful or free service accessed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "completed"
+                        },
+                        "paymentProtocol": {
+                          "type": "string",
+                          "example": "x402"
+                        },
+                        "chargedUsdc": {
+                          "type": "string",
+                          "example": "1.00"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/actions/yield/vaults": {
+      "get": {
+        "summary": "List Available Yield Vaults",
+        "description": "Returns a list of all yield-bearing vaults currently supported by Aegis on the Arc Testnet, including their native CA (Contract Address) and descriptive metadata.",
+        "tags": [
+          "Actions API",
+          "Yield"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of available vaults",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "vaults": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "address": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "symbol": {
+                            "type": "string"
+                          },
+                          "asset": {
+                            "type": "string"
+                          },
+                          "strategy": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/yield/vault": {
+      "get": {
+        "summary": "Get Live Vault State",
+        "description": "Reads directly from the AegisUSDC vault smart contract to return live metrics including Total Value Locked (TVL), estimated APY, and the current Price Per Share. Crucial for understanding appreciation.",
+        "tags": [
+          "Actions API",
+          "Yield"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Live Vault State",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "vault": {
+                      "type": "object",
+                      "properties": {
+                        "address": {
+                          "type": "string"
+                        },
+                        "totalAssets": {
+                          "type": "string"
+                        },
+                        "totalShares": {
+                          "type": "string"
+                        },
+                        "pricePerShare": {
+                          "type": "string"
+                        },
+                        "estimatedAPYPercent": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/yield/balance": {
+      "get": {
+        "summary": "Track Agent Vault Position",
+        "description": "Returns the authenticated agent's current position in the vault. Includes the number of shares held, their current USDC value, and importantly, the `lockExpiresAt` timestamp that indicates when MEV cooldowns end.",
+        "tags": [
+          "Actions API",
+          "Yield"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent Position",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "balance": {
+                      "type": "object",
+                      "properties": {
+                        "vaultAddress": {
+                          "type": "string"
+                        },
+                        "shares": {
+                          "type": "string"
+                        },
+                        "usdcValue": {
+                          "type": "string"
+                        },
+                        "lockExpiresAt": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
+      }
+    },
+    "/v1/actions/yield/deposit": {
+      "post": {
+        "summary": "Deposit USDC into Vault",
+        "description": "Deposits raw USDC into the yield vault and mints `aUSDC` shares for the agent. The backend automatically handles the ERC-20 approvals required before depositing. **Warning:** This will trigger an MEV cooldown lock preventing immediate withdrawals.",
+        "tags": [
+          "Actions API",
+          "Yield"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "description": "Amount of USDC to deposit (e.g. '10.50')"
+                  }
+                },
+                "required": [
+                  "amount"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deposit Initiated Successfully"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID for financial idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent nonce"
+          }
+        ]
+      }
+    },
+    "/v1/actions/yield/withdraw": {
+      "post": {
+        "summary": "Withdraw USDC from Vault",
+        "description": "Burns `aUSDC` shares to withdraw the underlying USDC (including any accumulated yield appreciation) back to the agent's wallet. Will return `403` if the MEV cooldown lock is still active.",
+        "tags": [
+          "Actions API",
+          "Yield"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "description": "Amount of USDC to withdraw (e.g. '50.00')"
+                  }
+                },
+                "required": [
+                  "amount"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Withdrawal Initiated Successfully"
+          },
+          "403": {
+            "description": "Withdrawal Locked (MEV Cooldown)"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique UUID for financial idempotency"
+          },
+          {
+            "name": "X-Aegis-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Current agent nonce"
+          }
+        ]
+      }
+    },
+    "/v1/actions/wealth/limitOrder": {
+      "post": {
+        "summary": "Register Limit Order",
+        "description": "Register a conditional swap order that executes automatically when a target price is reached. The Wealth Sentinel monitors this intent and triggers execution.",
+        "tags": ["Actions API", "Wealth Engine"],
+        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["tokenIn", "tokenOut", "amountIn", "targetPrice", "condition"],
+                "properties": {
+                  "tokenIn": {"type": "string", "example": "USDC"},
+                  "tokenOut": {"type": "string", "example": "EURC"},
+                  "amountIn": {"type": "string", "example": "100.00"},
+                  "targetPrice": {"type": "string", "example": "0.92"},
+                  "condition": {"type": "string", "enum": ["LTE", "GTE"]}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "Limit order registered successfully"}},
+        "parameters": [
+          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"},
+          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Unique UUID for financial idempotency"},
+          {"name": "X-Aegis-Nonce", "in": "header", "required": true, "schema": {"type": "integer"}, "description": "Current agent nonce"}
+        ]
+      }
+    },
+    "/v1/actions/wealth/limitOrder/cancel": {
+      "post": {
+        "summary": "Cancel Limit Order",
+        "description": "Cancel an active limit order by its UUID.",
+        "tags": ["Actions API", "Wealth Engine"],
+        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": {"type": "string", "format": "uuid"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "Limit order cancelled"}},
+        "parameters": [
+          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"}
+        ]
+      }
+    },
+    "/v1/actions/wealth/dca": {
+      "post": {
+        "summary": "Register DCA Schedule",
+        "description": "Register a recurring dollar-cost averaging schedule. The Wealth Sentinel executes each leg automatically at the specified interval.",
+        "tags": ["Actions API", "Wealth Engine"],
+        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["tokenIn", "tokenOut", "amountInPerTx", "frequencyHours"],
+                "properties": {
+                  "tokenIn": {"type": "string", "example": "USDC"},
+                  "tokenOut": {"type": "string", "example": "cirBTC"},
+                  "amountInPerTx": {"type": "string", "example": "25.00"},
+                  "frequencyHours": {"type": "integer", "example": 24}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "DCA schedule registered successfully"}},
+        "parameters": [
+          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"},
+          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Unique UUID for financial idempotency"},
+          {"name": "X-Aegis-Nonce", "in": "header", "required": true, "schema": {"type": "integer"}, "description": "Current agent nonce"}
+        ]
+      }
+    },
+    "/v1/actions/wealth/dca/cancel": {
+      "post": {
+        "summary": "Cancel DCA Schedule",
+        "description": "Cancel an active DCA schedule by its UUID.",
+        "tags": ["Actions API", "Wealth Engine"],
+        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": {"type": "string", "format": "uuid"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "DCA schedule cancelled"}},
+        "parameters": [
+          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"}
+        ]
+      }
+    },
+    "/v1/actions/wealth/multiYield": {
+      "post": {
+        "summary": "Multi-Yield Deposit",
+        "description": "Split a USDC deposit across the Aegis aUSDC Vault and Synthra V3 concentrated liquidity in a single atomic action. Weights must add up to 100, and synthraWeight is capped at 80.",
+        "tags": ["Actions API", "Wealth Engine"],
+        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amountUsdc", "aegisWeight", "synthraWeight"],
+                "properties": {
+                  "amountUsdc": {"type": "string", "example": "100.00"},
+                  "aegisWeight": {"type": "integer", "example": 60, "minimum": 0, "maximum": 100},
+                  "synthraWeight": {"type": "integer", "example": 40, "minimum": 0, "maximum": 80}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"200": {"description": "Multi-yield deposit executed"}},
+        "parameters": [
+          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"},
+          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Unique UUID for financial idempotency"},
+          {"name": "X-Aegis-Nonce", "in": "header", "required": true, "schema": {"type": "integer"}, "description": "Current agent nonce"}
+        ]
+      }
+    },
+    "/v1/actions/wealth/yield/synthra/withdraw": {
+      "post": {
+        "summary": "Withdraw from Synthra V3",
+        "description": "Close the agent's active Synthra V3 concentrated liquidity position and collect all liquidity plus accrued trading fees back to USDC. No request body required.",
+        "tags": ["Actions API", "Wealth Engine"],
+        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "responses": {"200": {"description": "Synthra V3 position closed and fees collected"}},
+        "parameters": [
+          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"},
+          {"name": "Idempotency-Key", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Unique UUID for financial idempotency"},
+          {"name": "X-Aegis-Nonce", "in": "header", "required": true, "schema": {"type": "integer"}, "description": "Current agent nonce"}
+        ]
+      }
+    },
+    "/v1/actions/wealth/intents": {
+      "get": {
+        "summary": "Get Wealth Intents",
+        "description": "Retrieve all active limit orders and DCA schedules for the authenticated agent, including their current status (PENDING, EXECUTED, CANCELLED).",
+        "tags": ["Actions API", "Wealth Engine"],
+        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "responses": {"200": {"description": "Wealth intents ledger retrieved"}},
+        "parameters": [
+          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"}
+        ]
+      }
+    },
+    "/v1/actions/wealth/metrics": {
+      "get": {
+        "summary": "Get Wealth Metrics",
+        "description": "Retrieve portfolio performance metrics for the authenticated agent, including total deposits, current value, yield earned, and active position breakdown across Aegis Vault and Synthra V3.",
+        "tags": ["Actions API", "Wealth Engine"],
+        "security": [{"BearerAuth": []}, {"AegisEmail": []}],
+        "responses": {"200": {"description": "Portfolio metrics retrieved"}},
+        "parameters": [
+          {"name": "X-Aegis-Email", "in": "header", "required": true, "schema": {"type": "string"}, "description": "Agent email address"}
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Provide raw API session token issued by `/v1/connect/complete`"
+      },
+      "AegisEmail": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Aegis-Email",
+        "description": "Dual-header token holder identity confirmation"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+---
+title: 'Deposit USDC'
+openapi: 'POST /v1/actions/yield/deposit'
+---
+
+Deposit USDC into the yield vault. The API handles ERC-20 token approval automatically. 
+
+**Note**: Making a deposit triggers a strict MEV withdrawal lock cooldown (e.g., 1 hour). Attempting to withdraw before the lock expires will result in a 403 error.

@@ -1,0 +1,87 @@
+---
+title: Policy Engine
+description: "How Aegis enforces spending limits and protects your agents from overspending"
+---
+
+## Overview
+
+The Policy Engine is the core safety mechanism in Aegis. It sits between your agent's action request and the actual blockchain execution, enforcing configurable spending limits at four granularity levels.
+
+Every financial action, transfers, payments, bridges, swaps, and any other onchain operation that requires the movement of assets must pass through the policy engine before execution.
+
+## How It Works
+
+When an agent attempts a financial action, the policy engine:
+
+1. Looks up the agent's configured limits from the database
+2. Calculates the agent's cumulative spending for each time window (24h, 7d, 30d)
+3. Checks if the requested amount would exceed any limit
+4. **Rejects the action** if any limit would be breached
+5. **Allows execution** only if all limits are satisfied
+
+## Spending Limits
+
+| Field              | Description                                         | Default |
+| ------------------ | --------------------------------------------------- | ------- |
+| `perTxLimitUsdc`   | Maximum USDC per single transaction                 | 10,000  |
+| `dailyLimitUsdc`   | Maximum cumulative USDC in a rolling 24-hour window | 50,000  |
+| `weeklyLimitUsdc`  | Maximum cumulative USDC in a rolling 7-day window   | 200,000 |
+| `monthlyLimitUsdc` | Maximum cumulative USDC in a rolling 30-day window  | 500,000 |
+
+Limits are enforced hierarchically: `perTx ≤ daily ≤ weekly ≤ monthly`.
+
+## Checking Current Policy
+
+```bash
+curl -X GET https://api.aegisintent.xyz/v1/policy \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "policy": {
+    "id": "688d14bd-97eb-455c-ae5a-...",
+    "agentId": "de61c9e8-9c22-4a23-...",
+    "perTxLimitUsdc": "10000",
+    "dailyLimitUsdc": "50000",
+    "weeklyLimitUsdc": "200000",
+    "monthlyLimitUsdc": "500000",
+    "createdAt": "2026-05-14T21:45:09.154Z",
+    "updatedAt": "2026-05-19T18:05:02.577Z"
+  }
+}
+```
+
+## Policy Rejection
+
+If an action would exceed any limit, the API returns a `403` error:
+
+```json
+{
+  "success": false,
+  "error": "Transaction amount exceeds per-transaction policy limit",
+  "code": "POLICY_VIOLATION"
+}
+```
+
+The action is never sent to Circle. No gas is spent, no funds move.
+
+<Tip>
+  Default limits are intentionally conservative. They are designed so that even
+  if an agent goes rogue or is exploited, the damage is capped at predictable
+  amounts.
+</Tip>
+
+## Policy Updates
+
+To maintain a zero-trust security posture, **agents cannot update their own policies**. If an agent's credentials are leaked, the attacker remains constrained by the pre-configured limits and cannot autonomously increase them.
+
+All policy limit changes must be requested by contacting support.
+
+## Audit Trail Integration
+
+Every policy check is recorded in the audit log, regardless of whether the action succeeds or fails. This gives you a complete history of what your agent attempted and what was blocked.

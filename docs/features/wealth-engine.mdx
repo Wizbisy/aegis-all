@@ -1,0 +1,190 @@
+---
+title: Wealth Engine
+description: "Autonomous portfolio management with limit orders, DCA schedules, multi-yield allocation, and Synthra V3 concentrated liquidity"
+---
+
+<Info>
+  **Live on Arc Testnet** — The Aegis Wealth Engine is fully operational. Agents
+  can register limit orders, schedule DCA strategies, allocate across multiple
+  yield protocols, and withdraw from Synthra V3 positions.
+</Info>
+
+## Overview
+
+The Aegis Wealth Engine is an autonomous portfolio management layer that gives AI agents access to advanced DeFi strategies beyond basic transfers and swaps. It combines intent-based order execution, dollar-cost averaging, multi-protocol yield allocation, and concentrated liquidity management into a single cohesive API.
+
+A background **Wealth Sentinel** process runs every 5 minutes, scanning all active intents (limit orders and DCA schedules) and automatically executing them when market conditions are met.
+
+## Limit Orders
+
+Register conditional swap orders that execute automatically when a target price is reached.
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/limitOrder \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-Aegis-Nonce: 0" \
+  -d '{
+    "tokenIn": "USDC",
+    "tokenOut": "EURC",
+    "amountIn": "100.00",
+    "targetPrice": "0.92",
+    "condition": "LTE"
+  }'
+```
+
+### Limit Order Parameters
+
+| Field         | Type   | Required | Description                                                      |
+| ------------- | ------ | -------- | ---------------------------------------------------------------- |
+| `tokenIn`     | string | Yes      | Input token symbol (e.g. `"USDC"`)                               |
+| `tokenOut`    | string | Yes      | Output token symbol (e.g. `"EURC"`)                              |
+| `amountIn`    | string | Yes      | Amount of the input token to swap                                |
+| `targetPrice` | string | Yes      | The price threshold that triggers execution                      |
+| `condition`   | string | Yes      | `"LTE"` (execute when price ≤ target) or `"GTE"` (price ≥ target) |
+
+### Cancel a Limit Order
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/limitOrder/cancel \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "d290f1ee-6c54-4b01-90e6-d701748f0851"}'
+```
+
+## Dollar-Cost Averaging (DCA)
+
+Schedule recurring token purchases at fixed intervals. The Wealth Sentinel executes each leg automatically.
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/dca \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 7b1c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e" \
+  -H "X-Aegis-Nonce: 1" \
+  -d '{
+    "tokenIn": "USDC",
+    "tokenOut": "cirBTC",
+    "amountInPerTx": "25.00",
+    "frequencyHours": 24
+  }'
+```
+
+### DCA Parameters
+
+| Field            | Type   | Required | Description                                      |
+| ---------------- | ------ | -------- | ------------------------------------------------ |
+| `tokenIn`        | string | Yes      | Input token symbol                               |
+| `tokenOut`       | string | Yes      | Output token symbol                              |
+| `amountInPerTx`  | string | Yes      | Amount to swap per DCA execution                 |
+| `frequencyHours` | number | Yes      | Hours between each execution (e.g. `24` = daily) |
+
+### Cancel a DCA Schedule
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/dca/cancel \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"}'
+```
+
+## Multi-Yield Allocation
+
+Split a deposit across multiple yield protocols in a single atomic action. Currently supports the **Aegis aUSDC Vault** and **Synthra V3 Concentrated Liquidity**.
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/multiYield \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: c9d8e7f6-a5b4-3c2d-1e0f-9a8b7c6d5e4f" \
+  -H "X-Aegis-Nonce: 2" \
+  -d '{
+    "amountUsdc": "100.00",
+    "aegisWeight": 60,
+    "synthraWeight": 40
+  }'
+```
+
+### Multi-Yield Parameters
+
+| Field           | Type   | Required | Description                                                              |
+| --------------- | ------ | -------- | ------------------------------------------------------------------------ |
+| `amountUsdc`    | string | Yes      | Total USDC amount to allocate                                            |
+| `aegisWeight`   | number | Yes      | Percentage allocated to the Aegis aUSDC Vault (0–100)                    |
+| `synthraWeight` | number | Yes      | Percentage allocated to Synthra V3 concentrated liquidity (0–100, max 80) |
+
+<Warning>
+  `aegisWeight` and `synthraWeight` must add up to **100**. To protect agents
+  from excessive external protocol risk, `synthraWeight` is capped at **80%**.
+</Warning>
+
+## Synthra V3 Withdrawal
+
+Manually close a Synthra V3 concentrated liquidity position and collect all accrued fees back to USDC.
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/yield/synthra/withdraw \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: b1a2c3d4-e5f6-7890-abcd-1234567890ef" \
+  -H "X-Aegis-Nonce: 3"
+```
+
+No request body is required. The system automatically identifies the agent's active Synthra position and closes it, collecting all liquidity and earned fees.
+
+## Portfolio Monitoring
+
+### View Active Intents
+
+Get a list of all active limit orders and DCA schedules for the agent:
+
+```bash
+curl -X GET https://api.aegisintent.xyz/v1/actions/wealth/intents \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com"
+```
+
+### Portfolio Metrics
+
+Get a summary of portfolio performance including total deposited, current value, and yield earned:
+
+```bash
+curl -X GET https://api.aegisintent.xyz/v1/actions/wealth/metrics \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com"
+```
+
+## Wealth Sentinel
+
+The Wealth Sentinel is an autonomous background process that runs every **5 minutes**. It:
+
+1. Scans all `PENDING` limit orders and checks if market prices meet the trigger condition
+2. Scans all active DCA schedules and checks if enough time has elapsed since the last execution
+3. Automatically executes matching intents using the agent's Circle Developer Controlled Wallet
+4. Logs all executions to the audit trail for full transparency
+
+<Tip>
+  The Wealth Sentinel operates fully autonomously — once you register a limit
+  order or DCA schedule, you don't need to call any additional endpoints. The
+  system handles execution, nonce management, and audit logging automatically.
+</Tip>
+
+## Related Endpoints
+
+| Endpoint                                       | Method | Description                           |
+| ---------------------------------------------- | ------ | ------------------------------------- |
+| `/v1/actions/wealth/limitOrder`                | POST   | Register a new limit order            |
+| `/v1/actions/wealth/limitOrder/cancel`         | POST   | Cancel an existing limit order        |
+| `/v1/actions/wealth/dca`                       | POST   | Register a new DCA schedule           |
+| `/v1/actions/wealth/dca/cancel`                | POST   | Cancel an existing DCA schedule       |
+| `/v1/actions/wealth/multiYield`                | POST   | Split deposit across yield protocols  |
+| `/v1/actions/wealth/yield/synthra/withdraw`    | POST   | Close Synthra V3 position             |
+| `/v1/actions/wealth/intents`                   | GET    | View all active intents               |
+| `/v1/actions/wealth/metrics`                   | GET    | View portfolio performance metrics    |

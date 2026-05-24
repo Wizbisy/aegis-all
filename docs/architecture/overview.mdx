@@ -1,0 +1,119 @@
+---
+title: Architecture Overview
+description: "How Aegis is structured and how the components fit together"
+---
+
+## System Architecture
+
+Aegis is a secure REST API that acts as an orchestration layer between your AI agents and the blockchain. It does not hold private keys, all cryptographic signing is delegated to **Circle's Developer Controlled Wallets (DCW)** infrastructure.
+
+```mermaid
+flowchart TD
+    Agent["Your AI Agent"] -->|REST API| Gateway["Aegis API Gateway"]
+    Gateway --> Connect["Connect Router"]
+    Gateway --> Actions["Actions Router"]
+    Gateway --> Market["Marketplace Router"]
+    Gateway --> Policy["Policy Router"]
+
+    Actions --> PE["Policy Engine"]
+    PE --> Audit["Audit & Idempotency Layer"]
+
+    Audit --> DCW["Circle DCW\n(Wallets & Signing)"]
+    Audit --> CCTP["Circle CCTP\n(Cross-Chain Bridging)"]
+    Audit --> X402["x402 Services\n(Discovery API)"]
+    Audit --> AppKit["Circle App Kit\n(Swaps)"]
+    Audit --> Yield["Aegis Yield Vault\n(aUSDC)"]
+    Audit --> Synthra["Synthra V3\n(Concentrated Liquidity)"]
+
+    Sentinel["Wealth Sentinel\n(Background Cron)"] --> Actions
+    Distributor["Yield Distributor\n(Background Cron)"] --> Yield
+```
+
+## Core Components
+
+### API Gateway
+
+All routes are organized into modular routers:
+
+| Router      | Path                | Purpose                                                          |
+| ----------- | ------------------- | ---------------------------------------------------------------- |
+| Connect     | `/v1/connect/*`     | Agent onboarding and token management                            |
+| Actions     | `/v1/actions/*`     | Financial operations (transfer, pay, bridge, swap, yield, wealth) |
+| Marketplace | `/v1/marketplace/*` | x402 service discovery and inspection                            |
+| Policy      | `/v1/policy`        | Spending limit configuration                                     |
+
+### Circle DCW Integration
+
+Circle's Developer Controlled Wallets SDK handles:
+
+- EOA wallet creation on the **Arc Network** for each agent
+- Server side transaction signing without exposing private keys
+- USDC transfers with gas abstraction (Arc uses USDC as native gas)
+- Real time fee estimation
+
+### Policy Engine
+
+Every financial action passes through the policy engine before execution. It checks the requested amount against four configurable limits:
+
+- **Per-transaction**: Maximum USDC per single action
+- **Daily**: Rolling 24-hour spending cap
+- **Weekly**: Rolling 7-day spending cap
+- **Monthly**: Rolling 30-day spending cap
+
+If any limit would be exceeded, the action is rejected before it reaches Circle. See [Policy Engine](/security/policy-engine) for details.
+
+### Audit Layer
+
+Every financial action is logged with:
+
+- Agent ID, action type, and USDC amount
+- Idempotency key hash
+- Completion status and result metadata
+- Start and completion timestamps
+
+### Database & State
+
+All state is safely persisted in the database, including agent records, API tokens (hashed), policy configs, audit logs, idempotency records, connect challenges, wealth intents (limit orders and DCA schedules), and yield position metadata.
+
+### Yield Vault & Synthra V3
+
+Aegis integrates two yield protocols:
+
+- **Aegis aUSDC Vault** (`0xAf5f...`): A simple deposit/withdraw vault where agents earn yield on idle USDC. A background **Yield Distributor** injects real USDC yield hourly.
+- **Synthra V3**: Concentrated liquidity positions on a Uniswap V3-style AMM deployed on Arc Testnet. Agents can provide liquidity in tight price ranges for higher capital efficiency.
+
+The `multiYield` endpoint enables agents to split deposits across both protocols in a single atomic action.
+
+### Wealth Sentinel
+
+An autonomous background process running every **5 minutes** that:
+
+- Monitors all `PENDING` limit orders and checks live market prices
+- Monitors all active DCA schedules and checks elapsed time
+- Automatically executes matching intents via Circle DCW
+- Logs all autonomous executions to the audit trail
+
+## Request Lifecycle
+
+```mermaid
+flowchart LR
+    A["Request"] --> B["Rate Limit"]
+    B --> C["Auth Check"]
+    C --> D["Body Validation"]
+    D --> E["Idempotency Check"]
+    E --> F["Policy Check"]
+    F --> G["Execute via Circle"]
+    G --> H["Audit Log"]
+    H --> I["Response"]
+```
+
+## Network
+
+Aegis operates on the **Arc Testnet**: a Circle backed EVM chain where USDC is the native gas token. No separate gas token needed.
+
+| Property         | Value              |
+| ---------------- | ------------------ |
+| Network          | Arc Testnet        |
+| Gas Token        | USDC (native)      |
+| Wallet Type      | Circle DCW (EOA)   |
+| Supported Assets | USDC, EURC, cirBTC |

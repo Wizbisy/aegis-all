@@ -1,0 +1,36 @@
+---
+title: Glossary
+description: "Key terms and definitions used throughout the Aegis documentation"
+---
+
+## Terms
+
+| Term                          | Definition                                                                                                                                                                       |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Agent**                     | An autonomous program, AI model, or service that interacts with the Aegis API. Each agent has a unique email, wallet, and policy configuration.                                  |
+| **Arc Network**               | A Circle backed EVM-compatible blockchain where USDC is the native gas token. Aegis creates agent wallets on Arc.                                                                |
+| **aUSDC**                     | Aegis USDC — yield-bearing share tokens received when an agent deposits USDC into the Aegis Yield Vault. The value of aUSDC appreciates as yield is injected into the vault.     |
+| **Bearer Token**              | The API authentication credential issued during `/v1/connect/complete`. Prefixed with `aegis_live_`.                                                                             |
+| **CCTP**                      | Circle Cross-Chain Transfer Protocol. Used by Aegis to bridge USDC between supported blockchain networks.                                                                        |
+| **Circuit Breaker**           | A resilience pattern used in Aegis service calls. After repeated failures to an external service, the circuit breaker temporarily blocks requests to prevent cascading failures. |
+| **Connect Challenge**         | The email based OTP verification flow used to register agents and issue API tokens.                                                                                              |
+| **DCA (Dollar-Cost Averaging)** | A wealth engine strategy that executes recurring token purchases at fixed intervals. The Wealth Sentinel processes DCA schedules automatically.                                |
+| **DCW**                       | Developer Controlled Wallet. Circle's managed wallet infrastructure where private keys are stored in HSM-backed secure enclaves.                                                 |
+| **Dual-Header Auth**          | Aegis's authentication scheme requiring both `Authorization: Bearer <token>` and `X-Aegis-Email: <email>` headers on every request.                                              |
+| **EOA**                       | Externally Owned Account. The type of wallet Aegis provisions for agents — a standard EVM address controlled by a private key (managed by Circle).                               |
+| **EURC**                      | EUR Coin. A euro backed stablecoin issued by Circle. Supported as a balance token on Arc Testnet.                                                                                |
+| **Gas Abstraction**           | On the Arc Network, USDC is the gas token. Agents don't need to hold ETH or any other token to pay for transaction fees.                                                         |
+| **Idempotency Key**           | A unique UUID v4 sent with financial actions to prevent duplicate execution on retries.                                                                                          |
+| **Limit Order**               | A wealth engine intent that registers a conditional swap to be executed automatically when a target price is reached. Monitored by the Wealth Sentinel.                          |
+| **Marketplace**               | The Circle Discovery API integrated into Aegis, providing a catalog of x402-compatible paid API services.                                                                        |
+| **Multi-Yield**               | An allocation strategy that splits a single USDC deposit across multiple yield protocols (Aegis Vault and Synthra V3) in a single atomic action.                                 |
+| **Nonce**                     | A monotonically increasing counter per agent. Must be included in financial action requests to prevent replay attacks.                                                           |
+| **OTP**                       | One-Time Password. A 6-character hex code sent to the agent's email during onboarding. Valid for 10 minutes.                                                                     |
+| **Policy Engine**             | The spending limit enforcement layer that checks every financial action against per-transaction, daily, weekly, and monthly caps.                                                |
+| **Sliding Window Rate Limit** | The rate limiting algorithm used by Aegis. Requests are counted in a rolling time window rather than fixed intervals.                                                            |
+| **Synthra V3**                | A Uniswap V3-style concentrated liquidity AMM deployed on Arc Testnet. Aegis integrates with Synthra for high-capital-efficiency yield generation via tight price range liquidity positions. |
+| **USDC**                      | USD Coin. A fully backed US dollar stablecoin issued by Circle. The primary currency used in Aegis for all financial actions.                                                    |
+| **Wealth Sentinel**           | An autonomous background process that runs every 5 minutes, scanning and executing pending limit orders and DCA schedules when conditions are met.                               |
+| **x402**                      | An HTTP-based micropayment protocol where services respond with `402 Payment Required` and payment instructions. Aegis handles the negotiation and payment automatically.        |
+| **Audit Log**                 | An append only record of every financial action attempted by an agent, including successes, failures, and policy rejections.                                                     |
+| **Yield Distributor**         | A background cron process that injects real USDC yield into the Aegis Vault contract hourly, driving up the `pricePerShare` for all depositors.                                  |

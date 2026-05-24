@@ -1,0 +1,121 @@
+---
+title: Error Handling
+description: "Understanding Aegis error responses and how to handle them"
+---
+
+## Error Response Format
+
+All Aegis errors follow a consistent JSON structure:
+
+```json
+{
+  "success": false,
+  "error": "Human readable error message",
+  "code": "MACHINE_READABLE_ERROR_CODE"
+}
+```
+
+## HTTP Status Codes
+
+| Status | Meaning               | When It Happens                                               |
+| ------ | --------------------- | ------------------------------------------------------------- |
+| `400`  | Bad Request           | Invalid request body, missing required fields, malformed data |
+| `401`  | Unauthorized          | Invalid/expired token, missing auth headers, email mismatch   |
+| `403`  | Forbidden             | Policy violation: spending limit exceeded                     |
+| `404`  | Not Found             | Endpoint doesn't exist                                        |
+| `409`  | Conflict              | Wallet not provisioned, nonce mismatch                        |
+| `429`  | Too Many Requests     | Rate limit exceeded                                           |
+| `500`  | Internal Server Error | Unexpected server-side failure                                |
+| `502`  | Bad Gateway           | Circle API or external service unreachable                    |
+| `503`  | Service Unavailable   | Email delivery not configured, dependency down                |
+
+## Common Error Codes
+
+### Authentication Errors
+
+| Code           | Description                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `UNAUTHORIZED` | Token is invalid, expired, revoked, or missing. Also returned when `X-Aegis-Email` doesn't match the token owner |
+
+### Policy Errors
+
+| Code               | Description                                                     |
+| ------------------ | --------------------------------------------------------------- |
+| `POLICY_VIOLATION` | Action exceeds per transaction, daily, weekly, or monthly limit |
+
+### Wallet Errors
+
+| Code                     | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| `WALLET_NOT_PROVISIONED` | Agent exists but wallet has not been created yet |
+
+### Connect Errors
+
+| Code                   | Description                                      |
+| ---------------------- | ------------------------------------------------ |
+| `INVALID_CHALLENGE`    | Challenge ID doesn't match or doesn't exist      |
+| `CHALLENGE_USED`       | Challenge has already been consumed              |
+| `CHALLENGE_EXPIRED`    | Challenge has passed its 10 minute expiry window |
+| `INVALID_OTP`          | The OTP code is incorrect                        |
+| `TOO_MANY_ATTEMPTS`    | 5+ failed OTP attempts on this challenge         |
+| `EMAIL_NOT_CONFIGURED` | Server email delivery is not set up              |
+
+### Validation Errors
+
+| Code              | Description                                          |
+| ----------------- | ---------------------------------------------------- |
+| `INVALID_AMOUNT`  | Amount is not a valid positive number                |
+| `INVALID_ADDRESS` | EVM address is not valid (must be 0x + 40 hex chars) |
+
+### Wealth Engine Errors
+
+| Code                     | Description                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| `INVALID_YIELD_WEIGHTS`  | `aegisWeight` and `synthraWeight` do not add up to 100 or contain negative values      |
+| `YIELD_RISK_CAP_EXCEEDED`| `synthraWeight` exceeds the maximum external protocol allocation of 80%                |
+
+## Handling Errors in Your Agent
+
+When building an AI agent integration, handle errors gracefully:
+
+```javascript
+const response = await fetch(
+  "https://api.aegisintent.xyz/v1/actions/transfer",
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "X-Aegis-Email": email,
+      "Content-Type": "application/json",
+      "Idempotency-Key": crypto.randomUUID(),
+      "X-Aegis-Nonce": String(currentNonce),
+    },
+    body: JSON.stringify({ destination, amount }),
+  },
+);
+
+const data = await response.json();
+
+if (!data.success) {
+  switch (data.code) {
+    case "POLICY_VIOLATION":
+      // Reduce amount or wait for daily limit to reset
+      break;
+    case "WALLET_NOT_PROVISIONED":
+      // Agent needs to complete onboarding first
+      break;
+    case "UNAUTHORIZED":
+      // Token expired — re-authenticate via /connect/start
+      break;
+    default:
+      // Log and retry with backoff
+      break;
+  }
+}
+```
+
+<Tip>
+  For transient errors (429, 500, 502), implement exponential backoff with a
+  maximum of 3 retries. For permanent errors (400, 401, 403), do not retry — fix
+  the request.
+</Tip>

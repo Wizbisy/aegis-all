@@ -1,0 +1,91 @@
+---
+title: Transfers
+description: "Send USDC to any EVM address on the Arc Network"
+---
+
+## USDC Transfers
+
+Aegis enables your AI agents to send USDC to any EVM-compatible address on the Arc Network. Transfers are gas abstracted. Since Arc uses USDC as the native gas token, your agent doesn't need to hold a separate token to pay for gas fees.
+
+Every transfer is:
+
+- **Policy-checked**: Validated against per-transaction and cumulative spending limits
+- **Audited**: Logged in the tamper-proof audit trail
+- **Idempotent**: Protected against duplicate execution via the `Idempotency-Key` header
+
+## How It Works
+
+<Steps>
+  <Step title="Estimate fees">
+    Before executing a transfer, your agent can estimate the gas cost without spending anything:
+
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/actions/estimate/transfer \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -H "X-Aegis-Email: agent@example.com" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "destination": "0x8E8F5064f20D235F899c7553F1BEE77A235F4828",
+        "amount": "10.00"
+      }'
+    ```
+
+    The response includes real-time gas estimates at low, medium, and high fee levels, plus a balance sufficiency check.
+
+  </Step>
+
+  <Step title="Execute the transfer">
+    When ready, submit the transfer with an idempotency key and nonce:
+
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/actions/transfer \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -H "X-Aegis-Email: agent@example.com" \
+      -H "Content-Type: application/json" \
+      -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+      -H "X-Aegis-Nonce: 0" \
+      -d '{
+        "destination": "0x8E8F5064f20D235F899c7553F1BEE77A235F4828",
+        "amount": "10.00"
+      }'
+    ```
+
+  </Step>
+
+  <Step title="Confirm the result">
+    A successful transfer returns the transaction ID and state:
+
+    ```json
+    {
+      "success": true,
+      "result": {
+        "id": "f08f8279-fe6e-5843-a187-149acb7f5d5a",
+        "state": "INITIATED"
+      }
+    }
+    ```
+
+  </Step>
+</Steps>
+
+## Transfer Parameters
+
+| Field         | Type   | Required | Description                                         |
+| ------------- | ------ | -------- | --------------------------------------------------- |
+| `destination` | string | Yes      | EVM address to send USDC to (0x-prefixed, 42 chars) |
+| `amount`      | string | Yes      | Amount of USDC to send (e.g. `"10.00"`)             |
+
+## Gas Abstraction
+
+On the Arc Network, USDC is the native gas token. This means:
+
+- No need to hold ETH or any other token for gas
+- Gas fees are deducted directly from the USDC balance
+- Typical transfer gas costs are fractions of a cent
+
+<Tip>
+  Use the `/v1/actions/estimate/transfer` endpoint to get real-time fee
+  estimates before committing to a transfer. The estimate includes `low`,
+  `medium`, and `high` fee levels so your agent can choose the appropriate
+  speed.
+</Tip>

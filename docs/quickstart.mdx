@@ -1,0 +1,213 @@
+---
+title: 'Quickstart'
+description: 'Connect your first AI agent and execute an autonomous payment in under 5 minutes'
+---
+
+## Get Started with Aegis
+
+This quickstart guide walks you through the full lifecycle, registering an agent, checking your wallet, and executing your first x402 micropayment on the Arc Testnet.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+- An email address for your agent (any valid email works)
+- `curl` or any HTTP client installed
+- Access to the Aegis API at `https://api.aegisintent.xyz`
+
+## Step 1: Register Your Agent
+
+Aegis uses a secure email based OTP flow to onboard agents and issue API tokens. No dashboards, no signups, just two API calls.
+
+<Steps>
+  <Step title="Request a verification code">
+    Send your agent's email to start the onboarding challenge. Aegis will send a **6-character hex OTP code** to that email.
+
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/connect/start \
+      -H "Content-Type: application/json" \
+      -d '{"email": "your-agent@example.com"}'
+    ```
+
+    **Response:**
+    ```json
+    {
+      "success": true,
+      "challengeId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "expiresAt": "2026-05-20T00:45:00.000Z",
+      "message": "Verification code prepared. Complete the challenge before a token is issued."
+    }
+    ```
+
+    <Tip>
+      Save the `challengeId` from the response — you'll need it in the next step.
+    </Tip>
+  </Step>
+
+  <Step title="Check your email">
+    Open your inbox and find the 6-character hex code (e.g. `A8F93D`).
+  </Step>
+
+  <Step title="Complete the challenge">
+    Submit the OTP along with the `challengeId` to receive your API token. On success, Aegis will:
+    - Register the agent (if new)
+    - Provision a Circle Developer Controlled Wallet on the Arc Network
+    - Issue a Bearer API token (valid for 30 days)
+
+    ```bash
+    curl -X POST https://api.aegisintent.xyz/v1/connect/complete \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email": "your-agent@example.com",
+        "challengeId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+        "otp": "A8F93D"
+      }'
+    ```
+
+    **Response:**
+    ```json
+    {
+      "success": true,
+      "agent": {
+        "id": "clx1abc2d0001...",
+        "email": "your-agent@example.com",
+        "walletId": "85d48e9b-bd7c-5181-a980-89ae1233272e",
+        "walletAddress": "0xc27508085e5b2128e5a14dedacb53d6525dbcbde"
+      },
+      "tokenIssued": true,
+      "token": "aegis_live_wzm79d9Jzd7LMY4T2iOoWICg1puoWkL...",
+      "tokenExpiresAt": "2026-06-19T00:35:00.000Z",
+      "message": "Verification succeeded. Store this token securely; it is shown only once."
+    }
+    ```
+
+    <Warning>
+      **Store your token immediately!** The plain token is only shown once in this response. It is cryptographically hashed in our database and cannot be retrieved again.
+    </Warning>
+  </Step>
+</Steps>
+
+For details on authentication headers, idempotency, nonces, and token revocation, see the [Authentication](/authentication) page.
+
+## Step 2: Check Your Wallet
+
+Verify that your agent's wallet was provisioned and check the current USDC balance:
+
+```bash
+curl -X GET https://api.aegisintent.xyz/v1/actions/balance \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: your-agent@example.com"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "wallet": {
+    "walletId": "85d48e9b-bd7c-5181-a980-...",
+    "walletAddress": "0xc27508085e5b2128e5a14..."
+  },
+  "balance": [
+    {
+      "token": {
+        "id": "15dc2b5d-0994-58b0-bf8c-...",
+        "blockchain": "ARC-TESTNET",
+        "name": "USDC",
+        "symbol": "USDC",
+        "decimals": 18,
+        "isNative": true
+      },
+      "amount": "39.492258598461631676",
+      "blockchain": "ARC-TESTNET",
+      "address": "0xc27508085e5b2128e5a14..."
+    },
+    {
+      "token": {
+        "blockchain": "ARC-TESTNET",
+        "name": "EURC",
+        "symbol": "EURC",
+        "decimals": 6,
+        "isNative": false
+      },
+      "amount": "0.004617",
+      "blockchain": "ARC-TESTNET"
+    }
+  ]
+}
+```
+
+<Tip>
+  The balance response returns tokens across **all chains** your wallet is connected to (Arc Testnet, ETH Sepolia, etc). Filter by `blockchain: "ARC-TESTNET"` for Arc-specific balances.
+</Tip>
+
+## Step 3: Discover Paid Services
+
+Search the Circle x402 Discovery API to find paid API services your agent can use:
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/marketplace/search \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: your-agent@example.com" \
+  -d '{"keyword": "crypto"}'
+```
+
+## Step 4: Execute a Payment
+
+Route the payment through `/v1/actions/pay`. Aegis handles the full x402 negotiation automatically.
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/pay \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: your-agent@example.com" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-Aegis-Nonce: 0" \
+  -d '{
+    "serviceUrl": "https://api.example.com/v1/data",
+    "maxAmount": "1.50",
+    "method": "GET"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "result": {
+    "status": "completed",
+    "paymentProtocol": "x402",
+    "chargedUsdc": "1.00",
+    "response": {
+      "status": 200,
+      "data": { "...service response..." }
+    }
+  }
+}
+```
+
+<Success>
+  **Your agent just made its first autonomous payment!** It discovered a service, negotiated the x402 challenge, and paid for it, all in a single API call.
+</Success>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card color="#10B981" title="Authentication" icon="lock" href="/authentication">
+    Headers, idempotency, nonces, token revocation, and security
+  </Card>
+  <Card color="#10B981" title="Transfers" icon="paper-plane" href="/features/transfers">
+    Send USDC to any EVM address on Arc
+  </Card>
+  <Card color="#10B981" title="Yield Vaults" icon="seedling" href="/features/yield">
+    Deposit USDC and earn auto-compounding yield via aUSDC
+  </Card>
+  <Card color="#10B981" title="Wealth Engine" icon="chart-line" href="/features/wealth-engine">
+    Limit orders, DCA, multi-yield, and Synthra V3 concentrated liquidity
+  </Card>
+  <Card color="#10B981" title="Swap" icon="right-left" href="/features/swap">
+    Swap between USDC, EURC, and cirBTC
+  </Card>
+  <Card color="#10B981" title="API Reference" icon="code" href="/api-reference/connect/start">
+    Browse every endpoint with request/response schemas
+  </Card>
+</CardGroup>

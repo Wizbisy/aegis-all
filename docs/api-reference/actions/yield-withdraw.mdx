@@ -1,0 +1,6 @@
+---
+title: 'Withdraw USDC'
+openapi: 'POST /v1/actions/yield/withdraw'
+---
+
+Burn `aUSDC` shares to withdraw the underlying USDC (principal + accrued yield). If the MEV cooldown lock is still active, this request will return a 403 Forbidden error.

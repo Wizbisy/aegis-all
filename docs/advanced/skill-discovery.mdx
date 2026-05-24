@@ -1,0 +1,10 @@
+---
+title: "Skill Discovery"
+description: "How agents discover and evaluate x402-compatible API services"
+---
+
+Skill Discovery is the process by which an AI agent finds, evaluates, and selects paid API services to use. Aegis integrates with the **Circle Discovery API** to provide a live catalog of x402-compatible services that agents can pay for with USDC.
+
+If the agent decides to use the service, it calls `/v1/actions/pay` to execute the x402 micropayment. See [x402 Payments](/features/x402-payments) for details.
+
+There are currently no x402 services registered on the Arc Testnet in the supported networks — the x402 payment is handled at the protocol level, not the chain level.

@@ -1,0 +1,102 @@
+---
+title: Best Practices
+description: "Recommended patterns for building reliable AI agent integrations with Aegis"
+---
+
+## Agent Design Patterns
+
+### 1. One Agent Per Purpose
+
+Provision dedicated agents for different tasks rather than sharing a single token across your entire system. For example:
+
+- `research-agent@company.com`: For data acquisition and x402 payments
+- `treasury-agent@company.com`: For managing funds and transfers
+- `trading-agent@company.com`: For swap operations
+
+This gives you independent audit trails, separate spending policies, and the ability to revoke one agent without affecting others.
+
+### 2. Always Estimate Before Executing
+
+Before any financial action, call the corresponding estimate endpoint:
+
+| Action       | Estimate Endpoint                    |
+| ------------ | ------------------------------------ |
+| Transfer     | `POST /v1/actions/estimate/transfer` |
+| x402 Payment | `POST /v1/actions/estimate/pay`      |
+| Bridge       | `POST /v1/actions/estimate/bridge`   |
+
+This lets your agent make informed decisions about costs and balance sufficiency before committing.
+
+### 3. Generate Fresh Idempotency Keys
+
+Always generate a new UUID for each action. Never hardcode or reuse idempotency keys:
+
+```javascript
+// Good
+const key = crypto.randomUUID();
+
+// Bad — reusing the same key for different actions
+const key = "my-fixed-key";
+```
+
+### 4. Track the Nonce
+
+Your agent should track its `actionNonce` locally and increment it after each successful financial action. If you lose track, call `GET /v1/actions/nonce` to sync:
+
+```bash
+curl -X GET https://api.aegisintent.xyz/v1/actions/nonce \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com"
+```
+
+### 5. Handle Errors Gracefully
+
+Implement exponential backoff for transient errors (429, 500, 502) and immediate error handling for permanent failures (400, 401, 403). See [Error Handling](/advanced/error-handling).
+
+### 6. Policy Limits
+
+Aegis enforces a zero trust model: **agents cannot modify their own spending policies**. This prevents a compromised agent from autonomously raising its limits to drain funds.
+
+Every new agent is automatically provisioned with secure, platform-enforced defaults from the Policy Engine:
+
+- **Per-transaction limit**: `10,000 USDC`
+- **Daily rolling limit**: `50,000 USDC`
+- **Weekly rolling limit**: `200,000 USDC`
+- **Monthly rolling limit**: `500,000 USDC`
+
+If your agent requires different limits (e.g., more conservative boundaries during testing, or higher thresholds for production), please contact support to adjust them.
+
+### 7. Revoke on Compromise
+
+If you suspect a token leak, call `/v1/connect/revoke` immediately. The cost of re-onboarding is far lower than the cost of unauthorized transactions.
+
+### 8. Use maxAmount as a Safety Net
+
+When calling `/v1/actions/pay`, always set `maxAmount` to the maximum your agent is willing to pay. If the service charges more, the payment is rejected:
+
+```json
+{
+  "serviceUrl": "https://api.example.com/data",
+  "maxAmount": "0.50",
+  "method": "GET"
+}
+```
+
+### 9. Leverage the Wealth Sentinel
+
+For strategies that require timed or conditional execution (DCA, limit orders), register the intent once and let the Wealth Sentinel handle the rest. There's no need to poll or re-submit — the sentinel runs every 5 minutes and automatically executes matching intents.
+
+```bash
+# Register a daily DCA — the sentinel handles all future executions
+curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/dca \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "X-Aegis-Nonce: 0" \
+  -d '{"tokenIn":"USDC","tokenOut":"cirBTC","amountInPerTx":"25.00","frequencyHours":24}'
+```
+
+### 10. Use Multi-Yield for Diversification
+
+When depositing into yield protocols, use the `multiYield` endpoint to split capital across the Aegis Vault and Synthra V3 in one atomic action. The `synthraWeight` cap of 80% ensures your agent never over-exposes to external protocol risk.

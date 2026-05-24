@@ -1,0 +1,62 @@
+---
+title: Swap
+description: "Token swaps via Circle App Kit on the Arc Network"
+---
+
+## Token Swaps
+
+Aegis enables AI agents to perform onchain token swaps on the Arc Network using the **Circle App Kit**. Agents can swap between supported assets (USDC, EURC, cirBTC) directly through the API.
+
+## How It Works
+
+1. **Get a quote**: Call `/v1/actions/swap/estimate` to see expected output and fees
+2. **Execute**: Call `/v1/actions/swap` with an idempotency key and nonce
+3. **Track**: Call `/v1/actions/swap/history` to review past swaps
+
+## Get a Swap Quote
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/swap/estimate \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tokenIn": "USDC",
+    "tokenOut": "EURC",
+    "amount": "10.00"
+  }'
+```
+
+## Execute a Swap
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/swap \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-Aegis-Nonce: 0" \
+  -d '{
+    "tokenIn": "USDC",
+    "tokenOut": "EURC",
+    "amount": "10.00",
+    "slippageBps": 50
+  }'
+```
+
+## Parameters
+
+| Field         | Type   | Required | Description                                         |
+| ------------- | ------ | -------- | --------------------------------------------------- |
+| `tokenIn`     | string | Yes      | Input token symbol or contract address              |
+| `tokenOut`    | string | Yes      | Output token symbol or contract address             |
+| `amount`      | string | Yes      | Amount of the input token to swap                   |
+| `slippageBps` | number | No       | Slippage tolerance in basis points (e.g. 50 = 0.5%) |
+
+## Swap History
+
+```bash
+curl -X GET "https://api.aegisintent.xyz/v1/actions/swap/history?limit=20" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com"
+```

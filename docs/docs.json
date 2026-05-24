@@ -1,0 +1,140 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Aegis",
+  "colors": {
+    "primary": "#00F396",
+    "light": "#5DFFC5",
+    "dark": "#00C278"
+  },
+  "favicon": "/favicon.png",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "agent-skill",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "architecture/overview"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/transfers",
+              "features/x402-payments",
+              "features/swap",
+              "features/bridging",
+              "features/yield",
+              "features/wealth-engine",
+              "features/tax-harvesting",
+              "features/risk-monitoring"
+            ]
+          },
+          {
+            "group": "Security & Policies",
+            "pages": [
+              "security/policy-engine",
+              "security/security"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/error-handling",
+              "advanced/idempotency",
+              "advanced/webhooks",
+              "advanced/skill-discovery",
+              "advanced/best-practices",
+              "advanced/glossary"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Connect API",
+            "pages": [
+              "api-reference/connect/start",
+              "api-reference/connect/complete",
+              "api-reference/connect/revoke"
+            ]
+          },
+          {
+            "group": "Actions API",
+            "pages": [
+              "api-reference/actions/wallet",
+              "api-reference/actions/balance",
+              "api-reference/actions/pay",
+              "api-reference/actions/transfer",
+              "api-reference/actions/estimate-transfer",
+              "api-reference/actions/bridge",
+              "api-reference/actions/bridge-fee",
+              "api-reference/actions/bridge-status",
+              "api-reference/actions/bridge-chains",
+              "api-reference/actions/swap",
+              "api-reference/actions/audit-ledger",
+              "api-reference/actions/yield-vaults",
+              "api-reference/actions/yield-vault",
+              "api-reference/actions/yield-balance",
+              "api-reference/actions/yield-deposit",
+              "api-reference/actions/yield-withdraw",
+              "api-reference/actions/wealth-limit-order",
+              "api-reference/actions/wealth-limit-order-cancel",
+              "api-reference/actions/wealth-dca",
+              "api-reference/actions/wealth-dca-cancel",
+              "api-reference/actions/wealth-multi-yield",
+              "api-reference/actions/wealth-synthra-withdraw",
+              "api-reference/actions/wealth-intents",
+              "api-reference/actions/wealth-metrics"
+            ]
+          },
+          {
+            "group": "Marketplace API (x402)",
+            "pages": [
+              "api-reference/marketplace/search",
+              "api-reference/marketplace/inspect",
+              "api-reference/marketplace/history"
+            ]
+          },
+          {
+            "group": "Policy API",
+            "pages": [
+              "api-reference/policy/get"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@aegisintent.xyz"
+      }
+    ]
+  }
+}

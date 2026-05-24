@@ -1,0 +1,63 @@
+---
+title: Tax Loss Harvesting
+description: "Automated tax loss harvesting and audit ledger for AI agent portfolios"
+---
+
+## Overview
+
+Aegis includes a built in tax loss harvesting engine that scans an agent's portfolio for unrealized losses, evaluates whether harvesting them would be profitable after gas costs, and optionally executes offsetting trades to realize tax deductible losses.
+
+## Audit Ledger
+
+Generate a full tax compliance ledger for an agent's transaction history:
+
+```bash
+curl -X GET https://api.aegisintent.xyz/v1/actions/audit/ledger \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com"
+```
+
+## Tax Loss Harvest
+
+Run the harvesting engine in simulation or execution mode:
+
+```bash
+curl -X POST https://api.aegisintent.xyz/v1/actions/audit/harvest \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-Aegis-Email: agent@example.com" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "executionMode": "SIMULATE",
+    "taxBracket": 0.30
+  }'
+```
+
+## Parameters
+
+| Field           | Type   | Required | Description                                              |
+| --------------- | ------ | -------- | -------------------------------------------------------- |
+| `executionMode` | string | No       | `"SIMULATE"` (default) or `"HARVEST"` for live execution |
+| `taxBracket`    | number | No       | Tax bracket rate for benefit calculation (default: 0.30) |
+
+## How It Works
+
+1. Scans historical trades using FIFO cost basis accounting
+2. Identifies positions with unrealized losses
+3. Evaluates each candidate against gas drag (estimated ~$15 gas cost)
+4. In `SIMULATE` mode: returns what would happen without executing
+5. In `HARVEST` mode: executes offsetting trades and logs the results
+
+## Response
+
+```json
+{
+  "success": true,
+  "report": {
+    "agentId": "...",
+    "executionMode": "SIMULATE",
+    "candidatesAnalyzedCount": 3,
+    "harvestedPositions": [...],
+    "netRealizedLossCreatedUsdc": 45.20
+  }
+}
+```
