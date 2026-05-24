@@ -89,7 +89,7 @@ npm run dev
 ```bash
 cd contracts
 forge build
-forge test
+forge test 
 ```
 
 ---
