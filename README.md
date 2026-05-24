@@ -113,8 +113,8 @@ npx mintlify dev
 * **Live API**: `https://api.aegisintent.xyz`
 * **Agent Skill File**: `https://api.aegisintent.xyz/SKILL.md`
 * **Documentation**: `https://docs.aegisintent.xyz`
-* **Aegis Vault Contract**: [`0xAf5f79495285b1d180858a225aDE518d371e0167`](https://testnet.arc-explorer.com/address/0xAf5f79495285b1d180858a225aDE518d371e0167)
-* **Arc Explorer**: [testnet.arc-explorer.com](https://testnet.arc-explorer.com)
+* **Aegis Vault Contract**: [`0xAf5f79495285b1d180858a225aDE518d371e0167`](https://testnet.arcscan.app/address/0xAf5f79495285b1d180858a225aDE518d371e0167) 
+* **Arc Explorer**: [testnet.arcscan.app](https://testnet.arcscan.app)
 
 ---
 
