@@ -1,96 +1,123 @@
-# Aegis — Autonomous Wealth Infrastructure for AI Agents
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Wizbisy/mintlify-docs/main/logo/dark.svg" alt="Aegis Logo" width="300" />
 
-> **Built for the [Agora Agents Hackathon](https://agora.thecanteenapp.com/) by Canteen × Circle**
+  <h1>Aegis</h1>
+  <p><strong>Autonomous Wealth Infrastructure for AI Agents</strong></p>
+  <p>Built for the <a href="https://agora.thecanteenapp.com/">Agora Agents Hackathon</a> by Canteen × Circle</p>
 
-Aegis is a security-hardened financial infrastructure layer that gives AI agents the ability to hold, spend, and grow money autonomously on the **Arc Network** (Circle's purpose-built L1 blockchain).
+  <p>
+    <img src="https://img.shields.io/badge/Network-Arc%20Testnet-00F396?style=for-the-badge&logo=circle" alt="Arc Testnet" />
+    <img src="https://img.shields.io/badge/Smart%20Contracts-Foundry-gray?style=for-the-badge" alt="Foundry" />
+    <img src="https://img.shields.io/badge/Backend-Node.js%20%7C%20Hono-black?style=for-the-badge&logo=nodedotjs" alt="Backend" />
+    <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql" alt="Postgres" />
+  </p>
+</div>
 
-## 🏗️ Architecture
+---
 
-```
-canteen-arc-x-agora-hackathon/
-├── aegis/           # the core backend
-├── aegis-ui/        # dashboard UI
-├── contracts/       # Solidity smart contracts (Foundry)
-└── docs/            # Mintlify documentation site
-```
+## 🚀 The Problem & The Solution
 
-## ✨ Core Features
+**The Problem:** AI Agents are becoming highly intelligent, but they are financially paralyzed. They cannot safely hold money, they struggle to interact with complex DeFi protocols, and they cannot securely manage long-term wealth without risking user funds to hallucinated transactions.
 
-| Feature | Description |
-|---------|-------------|
-| **Agent Onboarding** | Email OTP → Bearer token → Circle DCW wallet provisioned automatically |
-| **USDC Transfers** | Gas-abstracted USDC transfers to any EVM address on Arc |
-| **x402 Micropayments** | Autonomous agent-to-service payments via the x402 protocol |
-| **Token Swaps** | USDC ↔ EURC ↔ cirBTC swaps via Circle App Kit |
-| **Cross-Chain Bridging** | USDC bridging via Circle CCTP to 7+ testnets |
-| **Yield Vault** | Deposit USDC → receive aUSDC shares → earn auto-compounding yield |
-| **Wealth Engine** | Limit orders, DCA schedules, and multi-yield allocation (Aegis Vault + Synthra V3) |
-| **Tax Loss Harvesting** | Automated FIFO cost-basis analysis and loss harvesting execution |
-| **Policy Engine** | Per-tx, daily, weekly, and monthly spending caps enforced at the database level |
-| **Audit Trail** | Immutable, append-only audit log for every financial action |
+**The Solution:** **Aegis** is a security-hardened, intent-based financial layer designed explicitly for AI. It acts as an unbreakable firewall between the AI agent's brain and its wallet. Agents interact with Aegis via natural intents (e.g., "Yield my idle USDC"), and Aegis executes the transactions on the **Arc Network**, enforcing strict cryptographic policies, idempotency, and spending caps.
 
-## 🔧 Tech Stack
+## ✨ Core Platform Features
 
-- **Runtime**: Node.js + TypeScript
-- **Framework**: [Hono](https://hono.dev/) (ultra-fast REST API)
-- **Database**: PostgreSQL + [Prisma ORM](https://www.prisma.io/)
-- **Wallets**: [Circle Developer Controlled Wallets](https://developers.circle.com/w3s/developer-controlled-wallets-quickstart)
-- **Bridging**: [Circle CCTP](https://developers.circle.com/stablecoins/cctp-getting-started)
-- **Yield**: Custom ERC-4626 Vault + Synthra V3 Concentrated Liquidity
-- **Smart Contracts**: Solidity + Foundry
-- **Docs**: [Mintlify](https://mintlify.com/)
-- **Network**: Arc Testnet (Chain ID: 5042002)
+### 🤖 Built for AI
+* **The `SKILL.md` Protocol**: Aegis provides a live, dynamic `SKILL.md` file that can be ingested into any LLM's system prompt (Claude, GPT-4, Gemini), instantly teaching the agent how to interact with the financial layer.
+* **Idempotency & Handshakes**: A strict 3-step nonce protocol prevents agents from accidentally double-spending or hallucinating transactions.
 
-## 🚀 Quick Start
+### 💰 The Wealth Engine
+* **Auto-Compounding Yield**: Agents can deposit idle USDC into the Aegis ERC-4626 Vault to earn yield.
+* **Smart Routing**: Support for Limit Orders, DCA schedules, and multi-yield allocation.
+* **Tax Loss Harvesting**: Automated FIFO and LIFO cost-basis analysis executed directly on-chain.
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL database
-- Circle API credentials ([get them here](https://developers.circle.com/))
+### 🌉 Seamless Value Transfer
+* **Gasless Arc Transactions**: Gas is fully abstracted. Agents send USDC on the Arc L1 without needing native gas tokens.
+* **x402 Micropayments**: Agents can autonomously discover and pay for external APIs and data services.
+* **Circle CCTP**: Instant cross-chain bridging of USDC across 7+ testnets.
 
-### Setup
+---
 
+## 🏗️ Monorepo Architecture
+
+Because Aegis is a massive full-stack infrastructure, the repository is cleanly modularized:
+
+| Directory | Purpose | Repository Status |
+|-----------|---------|-------------------|
+| `aegis/` | The REST API backend. | [Standalone Repo](https://github.com/Wizbisy/aegis) |
+| `aegis-ui/` | The Next.js web dashboard for human oversight. | Included here |
+| `contracts/` | Solidity smart contracts (ERC-4626 Vaults). | Included here |
+| `docs/` | The Mintlify documentation site. | [Standalone Repo](https://github.com/Wizbisy/mintlify-docs) |
+
+---
+
+## 🔧 Technical Stack
+
+* **Blockchain**: Arc Testnet (Chain ID: `5042002`)
+* **Wallets**: Circle Developer Controlled Wallets (DCW)
+* **Cross-Chain**: Circle CCTP
+* **Backend**: Node.js, TypeScript, Hono, Prisma, PostgreSQL
+* **Frontend**: Next.js 14, Tailwind CSS, Framer Motion
+* **Smart Contracts**: Solidity, Foundry, OpenZeppelin
+
+---
+
+## 🚀 Quick Start (Local Development)
+
+### 1. Backend Setup (`aegis/`)
 ```bash
-# Clone the repo
-git clone https://github.com/YOUR_USERNAME/canteen-arc-x-agora-hackathon.git
-cd canteen-arc-x-agora-hackathon
-
-# Install backend dependencies
 cd aegis
-cp .env.example .env   # Fill in your credentials
 npm install
-
-# Setup database
-npx prisma db push
-
-# Start the server
+# Create your .env file
+cp .env.example .env 
+# Generate Prisma Client
+npx prisma generate
+# Start the dev server
 npm run dev
 ```
 
-### Agent Skill File
-
-Aegis ships with a pre-compiled `SKILL.md` that any LLM can ingest to autonomously interact with the platform:
-
+### 2. Frontend Setup (`aegis-ui/`)
 ```bash
-curl https://api.aegisintent.xyz/SKILL.md
+cd aegis-ui
+npm install
+# Ensure .env.local points BACKEND_URL to your local or remote aegis API
+npm run dev
 ```
 
-## 📖 Documentation
+### 3. Smart Contracts (`contracts/`)
+```bash
+cd contracts
+forge build
+forge test
+```
 
-Full API documentation is available at [docs.aegisintent.xyz](https://docs.aegisintent.xyz) or run locally:
+---
 
+## 📖 Comprehensive Documentation
+
+Our full API reference, architecture guides, and agent integration tutorials are hosted on our dedicated Mintlify site.
+
+👉 **[Read the Aegis Documentation](https://docs.aegisintent.xyz)**
+
+To view the documentation locally:
 ```bash
 cd docs
 npx mintlify dev
 ```
 
-## 🔗 Key Links
+---
 
-- **Live API**: `https://api.aegisintent.xyz`
-- **Documentation**: [docs.aegisintent.xyz](https://docs.aegisintent.xyz)
-- **Vault Contract**: [`0xAf5f79495285b1d180858a225aDE518d371e0167`](https://testnet.arc-explorer.com/address/0xAf5f79495285b1d180858a225aDE518d371e0167)
-- **Arc Testnet Explorer**: [testnet.arc-explorer.com](https://testnet.arc-explorer.com)
+## 🔗 Deployed Infrastructure Links
 
-## 📄 License
+* **Live API**: `https://api.aegisintent.xyz`
+* **Agent Skill File**: `https://api.aegisintent.xyz/SKILL.md`
+* **Documentation**: `https://docs.aegisintent.xyz`
+* **Aegis Vault Contract**: [`0xAf5f79495285b1d180858a225aDE518d371e0167`](https://testnet.arc-explorer.com/address/0xAf5f79495285b1d180858a225aDE518d371e0167)
+* **Arc Explorer**: [testnet.arc-explorer.com](https://testnet.arc-explorer.com)
 
-MIT
+---
+
+<div align="center">
+  <p>Built by <a href="https://github.com/Wizbisy">@wizbisy</a> for the future of Autonomous Finance.</p>
+</div>
