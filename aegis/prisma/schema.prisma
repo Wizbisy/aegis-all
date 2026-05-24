@@ -1,0 +1,166 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Agent {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  isActive        Boolean          @default(true)
+  walletId        String?          @unique
+  walletAddress   String?          @unique
+  walletSetId     String?          @unique
+  actionNonce     Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  authLogs        AuthLog[]
+  auditLogs       AuditLog[]
+  idempotencyKeys IdempotencyKey[]
+  apiTokens       AgentApiToken[]
+  policy          AgentPolicy?
+  limitOrders     LimitOrder[]
+  dcaSchedules    DcaSchedule[]
+}
+
+model AgentApiToken {
+  id            String   @id @default(uuid())
+  agentId       String
+  agent         Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tokenHash     String   @unique
+  label         String?
+  allowedIps    Json
+  expiresAt     DateTime
+  lastUsedAt    DateTime?
+  revokedAt     DateTime?
+  revokedReason String?
+  createdAt     DateTime @default(now())
+  authLogs      AuthLog[]
+
+  @@index([agentId, revokedAt, expiresAt, createdAt])
+  @@index([expiresAt, revokedAt])
+}
+
+model ConnectChallenge {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  otpHash     String
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([expiresAt])
+}
+
+model AuthLog {
+  id          String            @id @default(uuid())
+  agentId     String?
+  agent       Agent?            @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  tokenId     String?
+  token       AgentApiToken?    @relation(fields: [tokenId], references: [id], onDelete: SetNull)
+  ipAddress   String
+  userAgent   String?
+  outcome     String
+  reason      String?
+  requestId   String?
+  createdAt   DateTime          @default(now())
+
+  @@index([agentId, createdAt])
+  @@index([tokenId, createdAt])
+  @@index([outcome, createdAt])
+}
+
+model AgentPolicy {
+  id                String   @id @default(uuid())
+  agentId           String   @unique
+  agent             Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  perTxLimitUsdc    Decimal  @default(10000.00) @db.Decimal(18, 6)
+  dailyLimitUsdc    Decimal  @default(50000.00) @db.Decimal(18, 6)
+  weeklyLimitUsdc   Decimal  @default(200000.00) @db.Decimal(18, 6)
+  monthlyLimitUsdc  Decimal  @default(500000.00) @db.Decimal(18, 6)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model IdempotencyKey {
+  id             String    @id @default(uuid())
+  agentId        String
+  agent          Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  keyHash        String
+  route          String
+  requestHash    String
+  status         String    @default("PENDING")
+  responseStatus Int?
+  responseBody   Json?
+  lockedUntil    DateTime
+  requestId      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([agentId, keyHash])
+  @@index([lockedUntil])
+  @@index([status, updatedAt])
+  @@index([agentId, status, updatedAt])
+}
+
+model AuditLog {
+  id             String    @id @default(uuid())
+  agentId        String
+  agent          Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  action         String
+  amountUsdc     Decimal?  @db.Decimal(18, 6)
+  status         String
+  idempotencyKey String?
+  signature      String?
+  resultHash     String?
+  metadata       Json?
+  error          String?
+  requestId      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([agentId, createdAt])
+  @@index([status])
+  @@index([agentId, status, createdAt])
+  @@index([action, agentId, createdAt])
+}
+
+model LimitOrder {
+  id             String    @id @default(uuid())
+  agentId        String
+  agent          Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tokenIn        String
+  tokenOut       String
+  amountIn       Decimal   @db.Decimal(18, 6)
+  targetPrice    Decimal   @db.Decimal(18, 6)
+  condition      String    @default("LTE") // "LTE" or "GTE"
+  status         String    @default("PENDING") // PENDING, EXECUTED, CANCELLED, FAILED
+  txHash         String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([agentId, status])
+  @@index([status, tokenIn, tokenOut])
+}
+
+model DcaSchedule {
+  id             String    @id @default(uuid())
+  agentId        String
+  agent          Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tokenIn        String
+  tokenOut       String
+  amountInPerTx  Decimal   @db.Decimal(18, 6)
+  frequencyHours Int
+  nextExecution  DateTime
+  status         String    @default("ACTIVE") // ACTIVE, PAUSED, CANCELLED
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([agentId, status])
+  @@index([status, nextExecution])
+}

@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "AgentPolicy" ALTER COLUMN "perTxLimitUsdc" SET DEFAULT 100.00,
+ALTER COLUMN "dailyLimitUsdc" SET DEFAULT 500.00,
+ALTER COLUMN "weeklyLimitUsdc" SET DEFAULT 2000.00,
+ALTER COLUMN "monthlyLimitUsdc" SET DEFAULT 5000.00;
