@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-plus-jakarta);
+}
+
+:root {
+  --background: #FAFBFD;
+  --foreground: #1E2026;
+  --primary: #00A360;
+  --primary-glow: rgba(0, 163, 96, 0.2);
+  --card: rgba(255, 255, 255, 0.8);
+  --border: rgba(226, 228, 233, 0.8);
+  --glow-1: rgba(0, 194, 120, 0.04);
+  --glow-2: rgba(59, 130, 246, 0.02);
+}
+
+.dark,
+:root[class~="dark"] {
+  --background: #050507;
+  --foreground: #FAFBFD;
+  --primary: #00F396;
+  --primary-glow: rgba(0, 243, 150, 0.3);
+  --card: rgba(13, 14, 18, 0.8);
+  --border: rgba(28, 29, 36, 0.6);
+  --glow-1: rgba(0, 243, 150, 0.08);
+  --glow-2: rgba(59, 130, 246, 0.04);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  background-image: 
+    radial-gradient(at 0% 0%, var(--glow-1) 0px, transparent 60%),
+    radial-gradient(at 100% 100%, var(--glow-2) 0px, transparent 60%);
+  background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.glass-panel {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.dark .glass-panel {
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.glow-text {
+  text-shadow: 0 0 20px var(--primary-glow);
+}

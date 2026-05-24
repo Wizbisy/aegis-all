@@ -1,0 +1,17 @@
+<svg width="503" height="120" viewBox="0 0 503 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- AEGIS Wordmark Logo (Dark Mode / Solid White) -->
+  <!-- A: Chiseled, ultra-bold, geometric character matching the provided glyph -->
+  <path d="M 80 10 L 140 110 L 105 110 L 93 85 L 67 85 L 55 110 L 20 110 Z M 80 40 L 68 72 L 92 72 Z" fill="#FFFFFF" />
+  
+  <!-- E: Extended, blocky, bold geometric style -->
+  <path d="M 160 10 H 235 V 36 H 188 V 51 H 225 V 71 H 188 V 84 H 235 V 110 H 160 Z" fill="#FFFFFF" />
+  
+  <!-- G: Extended, blocky, bold geometric style -->
+  <path d="M 255 10 H 335 V 36 H 283 V 84 H 307 V 60 H 335 V 110 H 255 Z" fill="#FFFFFF" />
+  
+  <!-- I: Extended bold vertical pillar -->
+  <path d="M 355 10 H 383 V 110 H 355 Z" fill="#FFFFFF" />
+  
+  <!-- S: Extended, blocky, bold geometric style -->
+  <path d="M 403 10 H 483 V 36 H 431 V 48 H 483 V 110 H 403 V 84 H 455 V 72 H 403 Z" fill="#FFFFFF" />
+</svg>
