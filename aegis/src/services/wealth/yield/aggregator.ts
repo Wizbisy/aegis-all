@@ -1,15 +1,16 @@
-import { Token, Percent } from '@synthra-swap/sdk/core';
-import { Pool, Position, NonfungiblePositionManager, nearestUsableTick, FeeAmount, TICK_SPACINGS } from '@synthra-swap/sdk/v3';
+import { Token } from '@synthra-swap/sdk/core';
+import { FeeAmount, nearestUsableTick, Pool, Position, TICK_SPACINGS } from '@synthra-swap/sdk/v3';
 import * as JSBI from 'jsbi';
-import { depositToYieldVault } from '../../yield/deposit.js';
+import { createHash } from 'crypto';
+import { parseUnits } from 'viem';
 import { executeContractCall, waitForDcwTransaction } from '../../../circle/dcw.js';
+import { config } from '../../../config.js';
 import { AppError } from '../../../utils/errors.js';
 import { logger } from '../../../utils/logger.js';
 import { toUsdcNumber } from '../../../utils/validation.js';
-import { config } from '../../../config.js';
+import { depositToYieldVault } from '../../yield/deposit.js';
 import { getPublicClient, USDC_ADDRESS, ERC20_ABI } from '../../yield/client.js';
-import { parseUnits } from 'viem';
-import { createHash } from 'crypto';
+import { validateAgentAllocation } from './allocator.js';
 
 function deriveUUID(base: string, suffix: string): string {
   const hash = createHash('sha256').update(`${base}-${suffix}`).digest('hex');
@@ -17,7 +18,7 @@ function deriveUUID(base: string, suffix: string): string {
   return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-${y}${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 }
 
-const ARC_CHAIN_ID = 1637450;
+const ARC_CHAIN_ID = 5042002;
 
 interface MultiYieldInput {
   walletId: string;
@@ -33,9 +34,7 @@ export async function executeMultiYieldDeposit(input: MultiYieldInput) {
 
   logger.info({ walletAddress, amountUsdc, aegisWeight, synthraWeight }, 'Initiating agentic multi yield aggregation');
 
-  if (aegisWeight + synthraWeight !== 100) {
-    throw new AppError(400, 'Agent provided invalid weights: total must equal 100', 'INVALID_YIELD_WEIGHTS');
-  }
+  validateAgentAllocation(aegisWeight, synthraWeight);
 
   const totalUsdc = toUsdcNumber(amountUsdc);
   const aegisAmount = ((totalUsdc * aegisWeight) / 100).toFixed(6);
@@ -106,20 +105,12 @@ async function depositToSynthraV3(input: {
 }) {
   const { walletId, walletAddress, amountUsdc, idempotencyKey } = input;
 
-  const nftManagerAddress = process.env.SYNTHRA_NFT_POSITION_MANAGER_ADDRESS;
-  if (!nftManagerAddress) {
-    throw new AppError(503, 'SYNTHRA_NFT_POSITION_MANAGER_ADDRESS is not configured', 'SYNTHRA_NOT_CONFIGURED');
-  }
+  const nftManagerAddress = config.SYNTHRA_NFT_POSITION_MANAGER_ADDRESS;
+  const secondTokenAddress = config.SYNTHRA_PAIRED_TOKEN_ADDRESS;
+  const secondTokenDecimals = config.SYNTHRA_PAIRED_TOKEN_DECIMALS;
+  const secondTokenSymbol = config.SYNTHRA_PAIRED_TOKEN_SYMBOL;
 
   const usdcToken = new Token(ARC_CHAIN_ID, USDC_ADDRESS, 6, 'USDC', 'USD Coin');
-
-  const secondTokenAddress = process.env.SYNTHRA_PAIRED_TOKEN_ADDRESS;
-  const secondTokenDecimals = Number(process.env.SYNTHRA_PAIRED_TOKEN_DECIMALS ?? '18');
-  const secondTokenSymbol = process.env.SYNTHRA_PAIRED_TOKEN_SYMBOL ?? 'WETH';
-  if (!secondTokenAddress) {
-    throw new AppError(503, 'SYNTHRA_PAIRED_TOKEN_ADDRESS is not configured', 'SYNTHRA_NOT_CONFIGURED');
-  }
-
   const pairedToken = new Token(ARC_CHAIN_ID, secondTokenAddress, secondTokenDecimals, secondTokenSymbol);
 
   const client = await getPublicClient();
@@ -131,10 +122,18 @@ async function depositToSynthraV3(input: {
   const tickLower = nearestUsableTick(tickSpacing, tickSpacing);
   const tickUpper = nearestUsableTick(tickSpacing * 10, tickSpacing);
 
-  const sqrtRatioX96 = (JSBI as any).default?.BigInt?.('79228162514264337593543950336') ?? (JSBI as any).BigInt('79228162514264337593543950336');
-  const dummyPool = new Pool(usdcToken, pairedToken, fee, sqrtRatioX96, (JSBI as any).default?.BigInt?.('0') ?? (JSBI as any).BigInt('0'), 0);
+  const sqrtRatioX96 = (JSBI as any).default?.BigInt?.('79228162514264337593543950336')
+    ?? (JSBI as any).BigInt('79228162514264337593543950336');
+  const dummyPool = new Pool(
+    usdcToken,
+    pairedToken,
+    fee,
+    sqrtRatioX96,
+    (JSBI as any).default?.BigInt?.('0') ?? (JSBI as any).BigInt('0'),
+    0,
+  );
 
-  const position = Position.fromAmounts({
+  Position.fromAmounts({
     pool: dummyPool,
     tickLower,
     tickUpper,
@@ -210,10 +209,7 @@ export async function withdrawFromSynthraV3(input: {
   const { walletId, walletAddress, idempotencyKey } = input;
   let tokenId = input.tokenId;
 
-  const nftManagerAddress = process.env.SYNTHRA_NFT_POSITION_MANAGER_ADDRESS;
-  if (!nftManagerAddress) {
-    throw new AppError(503, 'SYNTHRA_NFT_POSITION_MANAGER_ADDRESS is not configured', 'SYNTHRA_NOT_CONFIGURED');
-  }
+  const nftManagerAddress = config.SYNTHRA_NFT_POSITION_MANAGER_ADDRESS;
 
   const client = await getPublicClient();
 
@@ -253,8 +249,11 @@ export async function withdrawFromSynthraV3(input: {
       tokenId = id.toString();
     } catch (err: any) {
       logger.error({ err }, 'Failed to fetch Synthra V3 token ID');
-      // Hackathon fallback
-      tokenId = '1';
+      throw new AppError(
+        502,
+        `Failed to fetch Synthra V3 position token ID: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'SYNTHRA_POSITION_LOOKUP_FAILED',
+      );
     }
   }
 
@@ -290,8 +289,12 @@ export async function withdrawFromSynthraV3(input: {
     currentLiquidity = positionData[7].toString();
     logger.info({ currentLiquidity }, 'Successfully retrieved position liquidity');
   } catch (err) {
-    logger.error({ err }, 'Failed to fetch position liquidity. Falling back to a safe simulated amount');
-    currentLiquidity = '100000000';
+    logger.error({ err }, 'Failed to fetch position liquidity');
+    throw new AppError(
+      502,
+      `Failed to fetch Synthra V3 position liquidity: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      'SYNTHRA_POSITION_LIQUIDITY_FAILED',
+    );
   }
 
   if (currentLiquidity === '0') {
@@ -301,7 +304,7 @@ export async function withdrawFromSynthraV3(input: {
       nftManagerAddress,
       tokenId,
       txId: null,
-      txHash: '0xmock_already_closed_' + Math.random().toString(36).substring(7),
+      txHash: null,
       status: 'COMPLETE',
     };
   }

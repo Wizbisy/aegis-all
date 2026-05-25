@@ -10,6 +10,10 @@ const envSchema = z.object({
   ARC_TESTNET_RPC_URL: z.string().url().optional(),
   ARC_CHAIN: z.enum(['ARC-TESTNET']),
   AEGIS_VAULT_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
+  SYNTHRA_NFT_POSITION_MANAGER_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  SYNTHRA_PAIRED_TOKEN_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  SYNTHRA_PAIRED_TOKEN_DECIMALS: z.coerce.number().int().positive(),
+  SYNTHRA_PAIRED_TOKEN_SYMBOL: z.string().min(1),
   SYNTHRA_ORDER_ROUTER_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
   SYNTHRA_LIQUIDITY_ROUTER_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
   SYNTHRA_VAULT_HANDLER_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
@@ -69,10 +73,16 @@ export function getCorsAllowedOrigins() {
     return [];
   }
 
-  return config.CORS_ALLOWED_ORIGINS
+  const origins = config.CORS_ALLOWED_ORIGINS
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean);
+
+  if (isProduction() && origins.includes('*')) {
+    throw new Error('CORS_ALLOWED_ORIGINS must list explicit origins in production; "*" is not allowed');
+  }
+
+  return origins;
 }
 
 export function shouldTrustProxyHeaders() {

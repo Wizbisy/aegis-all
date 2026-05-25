@@ -54,7 +54,7 @@ export async function executeTaxHarvest(input: {
       tokenHarvested: input.token,
       amountHarvested: input.amount.toString(),
       realizedLossUsdc: input.unrealizedLoss,
-      txHash: result.txHash ?? '0xfallback_tx',
+      txHash: result.txHash ?? null,
       timestamp: new Date(),
     };
   }

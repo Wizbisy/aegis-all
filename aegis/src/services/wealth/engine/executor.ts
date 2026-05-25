@@ -3,6 +3,7 @@ import { executeTokenSwap } from '../../swap/execute.js';
 import { AppError } from '../../../utils/errors.js';
 import { startAuditAction, completeAuditAction, failAuditAction } from '../../../utils/audit.js';
 import type { SupportedSwapToken, SwapExecutionResult } from '../../../utils/types.js';
+import { assertPolicyAllows } from '../../../policy/engine.js';
 
 export async function executeBackgroundIntent(
   agentId: string,
@@ -23,6 +24,8 @@ export async function executeBackgroundIntent(
   });
 
   try {
+    await assertPolicyAllows(agentId, amountIn, { excludeAuditId: audit.id });
+
     const tx = await executeTokenSwap({
       walletAddress,
       tokenIn: tokenIn as SupportedSwapToken,

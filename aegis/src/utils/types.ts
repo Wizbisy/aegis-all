@@ -1,3 +1,5 @@
+import type { HttpBindings } from '@hono/node-server';
+
 export interface AgentContext {
   id: string;
   email: string;
@@ -6,6 +8,7 @@ export interface AgentContext {
 }
 
 export type AppBindings = {
+  Bindings: HttpBindings;
   Variables: {
     agent: AgentContext;
     validatedBody: unknown;

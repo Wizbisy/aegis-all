@@ -3,6 +3,17 @@ import { AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
 import type { PolicyLimits } from '../utils/types.js';
 
+const POLICY_SPEND_ACTIONS = [
+  'TRANSFER_USDC',
+  'CCTP_BRIDGE_USDC',
+  'X402_PAY',
+  'TOKEN_SWAP',
+  'YIELD_DEPOSIT',
+  'MULTI_YIELD_DEPOSIT',
+  'WEALTH_AUTO_LIMIT_ORDER',
+  'WEALTH_AUTO_DCA',
+];
+
 function toPolicyNumber(value: unknown) {
   const numeric = Number(String(value ?? 0));
   return Number.isFinite(numeric) ? numeric : 0;
@@ -28,13 +39,19 @@ function getUtcMonthStart(date = new Date()) {
   return boundary;
 }
 
-async function getSpendSince(tx: { auditLog: { aggregate: typeof db.auditLog.aggregate } }, agentId: string, createdAt: Date) {
+async function getSpendSince(
+  tx: { auditLog: { aggregate: typeof db.auditLog.aggregate } },
+  agentId: string,
+  createdAt: Date,
+  options: { excludeAuditId?: string } = {},
+) {
   const totals = await tx.auditLog.aggregate({
     where: {
       agentId,
+      ...(options.excludeAuditId ? { id: { not: options.excludeAuditId } } : {}),
       status: { in: ['PENDING', 'SUCCESS'] },
       amountUsdc: { not: null },
-      action: { not: 'YIELD_WITHDRAW' },
+      action: { in: POLICY_SPEND_ACTIONS },
       createdAt: { gte: createdAt },
     },
     _sum: { amountUsdc: true },
@@ -67,7 +84,7 @@ export async function upsertLocalPolicy(agentId: string, limits: Required<Policy
   });
 }
 
-export async function assertPolicyAllows(agentId: string, amountUsdc: string) {
+export async function assertPolicyAllows(agentId: string, amountUsdc: string, options: { excludeAuditId?: string } = {}) {
   const amount = Number(amountUsdc);
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new AppError(400, 'amountUsdc must be a positive numeric value', 'INVALID_POLICY_AMOUNT');
@@ -91,17 +108,17 @@ export async function assertPolicyAllows(agentId: string, amountUsdc: string) {
       throw new AppError(403, `Transfer exceeds per-transaction policy limit of ${policy.perTxLimitUsdc} USDC`, 'POLICY_PER_TX_LIMIT');
     }
 
-    const spentToday = await getSpendSince(tx, agentId, getUtcDayStart());
+    const spentToday = await getSpendSince(tx, agentId, getUtcDayStart(), options);
     if (spentToday + amount > toPolicyNumber(policy.dailyLimitUsdc)) {
       throw new AppError(403, `Action exceeds daily policy limit of ${policy.dailyLimitUsdc} USDC`, 'POLICY_DAILY_LIMIT');
     }
 
-    const spentThisWeek = await getSpendSince(tx, agentId, getUtcWeekStart());
+    const spentThisWeek = await getSpendSince(tx, agentId, getUtcWeekStart(), options);
     if (spentThisWeek + amount > toPolicyNumber(policy.weeklyLimitUsdc)) {
       throw new AppError(403, `Action exceeds weekly policy limit of ${policy.weeklyLimitUsdc} USDC`, 'POLICY_WEEKLY_LIMIT');
     }
 
-    const spentThisMonth = await getSpendSince(tx, agentId, getUtcMonthStart());
+    const spentThisMonth = await getSpendSince(tx, agentId, getUtcMonthStart(), options);
     if (spentThisMonth + amount > toPolicyNumber(policy.monthlyLimitUsdc)) {
       throw new AppError(403, `Action exceeds monthly policy limit of ${policy.monthlyLimitUsdc} USDC`, 'POLICY_MONTHLY_LIMIT');
     }

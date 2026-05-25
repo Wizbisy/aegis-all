@@ -83,12 +83,13 @@ export function slidingWindowRateLimit(options: {
 }
 
 export function getClientIp(c: Context) {
-  const cfIp = c.req.header('cf-connecting-ip')?.trim();
-  const xRealIp = c.req.header('x-real-ip')?.trim();
   if (shouldTrustProxyHeaders()) {
+    const cfIp = c.req.header('cf-connecting-ip')?.trim();
+    const xRealIp = c.req.header('x-real-ip')?.trim();
     const forwardedFor = c.req.header('x-forwarded-for')?.split(',')[0]?.trim();
     return cfIp || forwardedFor || xRealIp || 'unknown';
   }
 
-  return cfIp || xRealIp || 'unknown';
+  const incoming = c.env?.incoming as { socket?: { remoteAddress?: string } } | undefined;
+  return incoming?.socket?.remoteAddress ?? 'unknown';
 }

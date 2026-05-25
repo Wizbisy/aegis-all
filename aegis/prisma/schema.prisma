@@ -140,11 +140,13 @@ model LimitOrder {
   targetPrice    Decimal   @db.Decimal(18, 6)
   condition      String    @default("LTE") // "LTE" or "GTE"
   status         String    @default("PENDING") // PENDING, EXECUTED, CANCELLED, FAILED
+  eligibleAt     DateTime  @default(now())
   txHash         String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
   @@index([agentId, status])
+  @@index([status, eligibleAt, createdAt])
   @@index([status, tokenIn, tokenOut])
 }
 
@@ -157,7 +159,8 @@ model DcaSchedule {
   amountInPerTx  Decimal   @db.Decimal(18, 6)
   frequencyHours Int
   nextExecution  DateTime
-  status         String    @default("ACTIVE") // ACTIVE, PAUSED, CANCELLED
+  status         String    @default("ACTIVE") // ACTIVE, PAUSED, CANCELLED, PAUSED_INSUFFICIENT_FUNDS, FAILED
+  failures       Int       @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

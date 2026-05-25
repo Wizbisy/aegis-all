@@ -1,4 +1,5 @@
 import { db } from '../db/prisma.js';
+import { config } from '../config.js';
 import { getVaultState, getPublicClient } from '../services/yield/index.js';
 import { logger } from './logger.js';
 
@@ -63,7 +64,7 @@ export async function getPlatformStats(ttlMs = 30_000) {
     });
 
     const client = await getPublicClient();
-    const nftManagerAddress = process.env.SYNTHRA_NFT_POSITION_MANAGER_ADDRESS as `0x${string}`;
+    const nftManagerAddress = config.SYNTHRA_NFT_POSITION_MANAGER_ADDRESS as `0x${string}`;
 
     if (nftManagerAddress && activeAgents.length > 0) {
       let totalLiquidity = 0n;

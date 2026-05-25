@@ -26,6 +26,7 @@ export async function registerLimitOrder(agentId: string, intent: LimitOrderInte
       targetPrice: intent.targetPrice,
       condition: intent.condition,
       status: 'PENDING',
+      eligibleAt: new Date(),
     },
   });
 }

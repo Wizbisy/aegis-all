@@ -19,6 +19,7 @@ import { fail } from '../utils/response.js';
 import type { AppBindings } from '../utils/types.js';
 import { getClientIp, slidingWindowRateLimit } from '../utils/ratelimit.js';
 import { evmAddressSchema, outboundHeaderSchema, serviceUrlSchema, usdcAmountSchema, swapSchema, swapEstimateSchema } from '../utils/validation.js';
+import { validateAgentAllocation } from '../services/wealth/yield/allocator.js';
 
 /**
  * Helper to handle successful completion of a financial action,
@@ -219,7 +220,7 @@ actionsRouter.post('/transfer', idempotencyMiddleware, async (c) => {
   });
 
   try {
-    await assertPolicyAllows(agent.id, amount);
+    await assertPolicyAllows(agent.id, amount, { excludeAuditId: audit.id });
     const wallet = await resolveAgentWallet(agent);
     const tx = await transferUsdc(wallet.walletId, destination, amount, idempotencyRecordId);
     return handleActionSuccess(c, audit.id, idempotencyRecordId, tx);
@@ -284,7 +285,7 @@ actionsRouter.post('/bridge', idempotencyMiddleware, async (c) => {
   });
 
   try {
-    await assertPolicyAllows(agent.id, parsed.data.amount);
+    await assertPolicyAllows(agent.id, parsed.data.amount, { excludeAuditId: audit.id });
     const bridge = await bridgeUsdc({
       walletAddress: wallet.walletAddress,
       toChain: parsed.data.toChain,
@@ -321,7 +322,7 @@ actionsRouter.post('/pay', idempotencyMiddleware, async (c) => {
   });
 
   try {
-    await assertPolicyAllows(agent.id, parsed.data.maxAmount);
+    await assertPolicyAllows(agent.id, parsed.data.maxAmount, { excludeAuditId: audit.id });
     const wallet = await resolveAgentWallet(agent);
     const tx = await payForService({
       serviceUrl: parsed.data.serviceUrl,
@@ -442,7 +443,7 @@ actionsRouter.post('/swap', idempotencyMiddleware, async (c) => {
   });
 
   try {
-    await assertPolicyAllows(agent.id, amount);
+    await assertPolicyAllows(agent.id, amount, { excludeAuditId: audit.id });
     
     const wallet = await resolveAgentWallet(agent);
     
@@ -561,7 +562,7 @@ actionsRouter.post('/yield/deposit', idempotencyMiddleware, async (c) => {
   });
 
   try {
-    await assertPolicyAllows(agent.id, parsed.data.amount);
+    await assertPolicyAllows(agent.id, parsed.data.amount, { excludeAuditId: audit.id });
     const wallet = await resolveAgentWallet(agent);
     const result = await depositToYieldVault({
       walletId: wallet.walletId,
@@ -616,8 +617,16 @@ const multiYieldSchema = z.object({
   amountUsdc: usdcAmountSchema,
   aegisWeight: z.number().int().min(0).max(100),
   synthraWeight: z.number().int().min(0).max(100),
-}).refine((data) => data.aegisWeight + data.synthraWeight === 100, {
-  message: 'aegisWeight and synthraWeight must add up to 100',
+}).superRefine((data, ctx) => {
+  try {
+    validateAgentAllocation(data.aegisWeight, data.synthraWeight);
+  } catch (err) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: err instanceof Error ? err.message : 'Invalid multi yield allocation',
+      path: ['synthraWeight'],
+    });
+  }
 });
 
 const cancelIntentSchema = z.object({ id: z.string().uuid() });
@@ -663,6 +672,7 @@ actionsRouter.post('/wealth/limitOrder', idempotencyMiddleware, async (c) => {
   });
 
   try {
+    await assertPolicyAllows(agent.id, parsed.data.amountIn, { excludeAuditId: audit.id });
     const order = await registerLimitOrder(agent.id, parsed.data);
     return handleActionSuccess(c, audit.id, idempotencyRecordId, order);
   } catch (err) {
@@ -705,6 +715,7 @@ actionsRouter.post('/wealth/dca', idempotencyMiddleware, async (c) => {
   });
 
   try {
+    await assertPolicyAllows(agent.id, parsed.data.amountInPerTx, { excludeAuditId: audit.id });
     const schedule = await registerDcaSchedule(agent.id, parsed.data);
     return handleActionSuccess(c, audit.id, idempotencyRecordId, schedule);
   } catch (err) {
@@ -749,7 +760,7 @@ actionsRouter.post('/wealth/multiYield', idempotencyMiddleware, async (c) => {
   });
 
   try {
-    await assertPolicyAllows(agent.id, parsed.data.amountUsdc);
+    await assertPolicyAllows(agent.id, parsed.data.amountUsdc, { excludeAuditId: audit.id });
     const result = await executeMultiYieldDeposit({
       walletId: wallet.walletId,
       walletAddress: wallet.walletAddress,
