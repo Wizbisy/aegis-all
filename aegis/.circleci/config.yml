@@ -3,7 +3,7 @@ version: 2.1
 executors:
   node-executor:
     docker:
-      - image: cimg/node:20.0
+      - image: cimg/node:20.20
     working_directory: ~/repo
 
 jobs:
@@ -15,7 +15,10 @@ jobs:
           name: Install Dependencies
           command: npm install
       - run:
-          name: Build TypeScript (with Swap Memory Allocation)
+          name: Generate Prisma Client
+          command: DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npm run prisma:generate
+      - run:
+          name: Build TypeScript 
           command: NODE_OPTIONS=--max_old_space_size=2048 npm run build
 
   deploy-to-ec2:
@@ -23,11 +26,11 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "$SSH_KEY_FINGERPRINT"
+            - "SHA256:ZW4NFjmF09Ej2/jAQ6uma+TtOJIB1MIqsWlotCQrSbI"
       - run:
           name: Deploy to AWS
           command: |
-            ssh -o StrictHostKeyChecking=no $SSH_USER@$HOST_IP "cd aegis && git pull origin main && npm install && NODE_OPTIONS=--max_old_space_size=2048 npm run build && pm2 restart aegis-backend --update-env"
+            ssh -o StrictHostKeyChecking=no $SSH_USER@$HOST_IP "cd aegis && git pull origin main && npm install && npm run prisma:generate && NODE_OPTIONS=--max_old_space_size=2048 npm run build && pm2 restart aegis-backend --update-env"
 
 workflows:
   version: 2
