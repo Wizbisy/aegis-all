@@ -52,3 +52,4 @@ next-env.d.ts
 # researcg file
 temp_research/
 .vscode
+localdev/
