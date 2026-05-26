@@ -518,6 +518,27 @@
         "tags": [
           "Actions API"
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "toChain"
+                ],
+                "properties": {
+                  "toChain": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 40,
+                    "description": "Destination chain identifier"
+                  }
+                }
+              }
+            }
+          }
+        },
         "security": [
           {
             "BearerAuth": []
@@ -537,8 +558,28 @@
                     "success": {
                       "type": "boolean"
                     },
-                    "feeUsdc": {
-                      "type": "string"
+                    "fee": {
+                      "type": "object",
+                      "properties": {
+                        "fromChain": {
+                          "type": "string"
+                        },
+                        "toChain": {
+                          "type": "string"
+                        },
+                        "estimatedFeeUsdc": {
+                          "type": "string"
+                        },
+                        "supportedChains": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "note": {
+                          "type": "string"
+                        }
+                      }
                     }
                   }
                 }
@@ -566,6 +607,26 @@
         "tags": [
           "Actions API"
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "txHash"
+                ],
+                "properties": {
+                  "txHash": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F0-9]{64}$",
+                    "description": "Bridge transaction hash"
+                  }
+                }
+              }
+            }
+          }
+        },
         "security": [
           {
             "BearerAuth": []
@@ -586,7 +647,7 @@
                       "type": "boolean"
                     },
                     "status": {
-                      "type": "string"
+                      "type": "object"
                     }
                   }
                 }
@@ -614,6 +675,14 @@
         "tags": [
           "Actions API"
         ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Chains retrieved successfully",
@@ -637,7 +706,17 @@
             }
           }
         },
-        "parameters": []
+        "parameters": [
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ]
       }
     },
     "/v1/actions/estimate/transfer": {
@@ -647,6 +726,30 @@
         "tags": [
           "Actions API"
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "destination",
+                  "amount"
+                ],
+                "properties": {
+                  "destination": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F0-9]{40}$"
+                  },
+                  "amount": {
+                    "type": "string",
+                    "description": "USDC amount as decimal string"
+                  }
+                }
+              }
+            }
+          }
+        },
         "security": [
           {
             "BearerAuth": []
@@ -666,8 +769,8 @@
                     "success": {
                       "type": "boolean"
                     },
-                    "estimatedFeeUsdc": {
-                      "type": "string"
+                    "estimate": {
+                      "type": "object"
                     }
                   }
                 }
@@ -695,6 +798,51 @@
         "tags": [
           "Actions API"
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tokenIn",
+                  "tokenOut",
+                  "amount"
+                ],
+                "properties": {
+                  "tokenIn": {
+                    "type": "string",
+                    "enum": [
+                      "USDC",
+                      "EURC",
+                      "cirBTC"
+                    ],
+                    "description": "Input token"
+                  },
+                  "tokenOut": {
+                    "type": "string",
+                    "enum": [
+                      "USDC",
+                      "EURC",
+                      "cirBTC"
+                    ],
+                    "description": "Output token"
+                  },
+                  "amount": {
+                    "type": "string",
+                    "description": "Swap amount as a decimal string with up to 6 decimals"
+                  },
+                  "slippageBps": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 500,
+                    "description": "Optional slippage in basis points"
+                  }
+                }
+              }
+            }
+          }
+        },
         "security": [
           {
             "BearerAuth": []

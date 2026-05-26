@@ -89,7 +89,9 @@ async function reserveIdempotencyRecord(input: {
     }
 
     if (input.providedNonce !== currentAgent.actionNonce) {
-      throw new AppError(409, `Nonce mismatch. Expected: ${currentAgent.actionNonce}, Received: ${input.providedNonce}`, 'NONCE_MISMATCH');
+      throw new AppError(409, 'Nonce mismatch. Please retry with the next available nonce.', 'NONCE_MISMATCH', {
+        providedNonce: input.providedNonce,
+      });
     }
 
     const record = await tx.idempotencyKey.create({
@@ -138,11 +140,18 @@ export const idempotencyMiddleware = createMiddleware(async (c: Context, next: N
 
   let body: any;
   try {
-    body = await c.req.json();
+    const contentLengthRaw = c.req.header('content-length');
+    const contentLength = contentLengthRaw ? Number(contentLengthRaw) : null;
+
+    if (contentLength === 0) {
+      body = {};
+    } else {
+      body = await c.req.json();
+    }
   } catch (err) {
-    return c.json({ 
-      success: false, 
-      error: 'JSON_PARSE_FAILED', 
+    return c.json({
+      success: false,
+      error: 'JSON_PARSE_FAILED',
     }, 400);
   }
   
