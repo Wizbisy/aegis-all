@@ -40,7 +40,7 @@ export async function estimateTransfer(walletId: string, destinationAddress: str
     sufficientBalance: available >= Number(totalCostUsdc),
     currentBalanceUsdc: String(available),
     feeLevels: fees, 
-    note: 'Real-time fee estimation from Circle DCW SDK. Arc Testnet native gas token is USDC.',
+    note: 'fee estimation is based on current network conditions and may change at execution time',
   };
 }
 

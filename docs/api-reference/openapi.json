@@ -528,6 +528,12 @@
                   "toChain"
                 ],
                 "properties": {
+                  "fromChain": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 40,
+                    "description": "Optional source chain identifier. Defaults to ARC-TESTNET when omitted."
+                  },
                   "toChain": {
                     "type": "string",
                     "minLength": 2,

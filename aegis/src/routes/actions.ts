@@ -75,6 +75,7 @@ const bridgeSchema = z.object({
 });
 
 const bridgeFeeSchema = z.object({
+  fromChain: z.string().min(2).max(40).optional(),
   toChain: z.string().min(2).max(40),
 });
 
@@ -241,7 +242,10 @@ actionsRouter.post('/bridge/fee', async (c) => {
   }
 
   try {
-    const fee = await getBridgeFee({ toChain: parsed.data.toChain });
+    const fee = await getBridgeFee({
+      toChain: parsed.data.toChain,
+      ...(parsed.data.fromChain ? { fromChain: parsed.data.fromChain } : {}),
+    });
     return c.json({ success: true, fee });
   } catch (err) {
     return fail(c, err);

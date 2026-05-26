@@ -7,11 +7,14 @@ description: "Bridge USDC across chains using Circle CCTP"
 
 Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable AI agents to bridge USDC between supported blockchain networks. This allows agents operating on the Arc Network to move funds to and from other testnet chains like Base Sepolia, Ethereum Sepolia, Arbitrum Sepolia, and more.
 
+`/v1/actions/bridge` executes the transfer.
+`/v1/actions/bridge/fee` and `/v1/actions/estimate/bridge` can estimate route costs before execution.
+
 ## How It Works
 
 <Steps>
   <Step title="Check supported chains">
-    Query the available destination chains:
+    Query the available chain identifiers for routing:
 
     ```bash
     curl -X GET https://api.aegisintent.xyz/v1/actions/bridge/chains \
@@ -22,20 +25,20 @@ Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable
   </Step>
 
   <Step title="Get a fee estimate">
-    Check the bridging fee for a specific destination chain:
+    Check the bridging fee for a specific route. `fromChain` is optional and defaults to Arc Testnet when omitted:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/fee \
       -H "Authorization: Bearer YOUR_TOKEN" \
       -H "X-Aegis-Email: agent@example.com" \
       -H "Content-Type: application/json" \
-      -d '{"toChain": "BASE-SEPOLIA"}'
+      -d '{"fromChain": "ARC-TESTNET", "toChain": "BASE-SEPOLIA"}'
     ```
 
   </Step>
 
   <Step title="Execute the bridge">
-    Submit the bridge transaction:
+    Submit the bridge transaction. For this mutation, include idempotency headers:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/bridge \
@@ -45,6 +48,7 @@ Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable
       -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
       -H "X-Aegis-Nonce: 0" \
       -d '{
+        "fromChain": "ARC-TESTNET",
         "toChain": "BASE-SEPOLIA",
         "amount": "50.00"
       }'
@@ -53,14 +57,14 @@ Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable
   </Step>
 
   <Step title="Track bridge status">
-    Monitor the bridge progress using the transaction hash:
+    Monitor bridge progress using the transaction hash (66-char `0x...` hex):
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/status \
       -H "Authorization: Bearer YOUR_TOKEN" \
       -H "X-Aegis-Email: agent@example.com" \
       -H "Content-Type: application/json" \
-      -d '{"txHash": "0x892a01f80e0cdbb..."}'
+      -d '{"txHash": "0x892a01f80e0cdbb01c6c1f7a3ef2f0f086c7f2f9f8f87d0b1246c8f4f7b1e9a"}'
     ```
 
   </Step>
@@ -68,19 +72,19 @@ Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable
 
 ## Bridge Parameters
 
-| Field       | Type   | Required | Description                                          |
-| ----------- | ------ | -------- | ---------------------------------------------------- |
-| `toChain`   | string | Yes      | Destination chain name (e.g. `"BASE-SEPOLIA"`, `"ETH-SEPOLIA"`) |
-| `amount`    | string | Yes      | Amount of USDC to bridge                             |
-| `fromChain` | string | No       | Source chain (defaults to Arc)                       |
-| `recipient` | string | No       | Destination address (defaults to agent's own wallet) |
+| Field       | Type   | Required | Description                                                           |
+| ----------- | ------ | -------- | --------------------------------------------------------------------- |
+| `toChain`   | string | Yes      | Destination chain identifier (e.g. `"BASE-SEPOLIA"`, `"ETH-SEPOLIA"`) |
+| `amount`    | string | Yes      | Amount of USDC to bridge                                              |
+| `fromChain` | string | No       | Source chain identifier (defaults to `ARC-TESTNET`)                   |
+| `recipient` | string | No       | Destination address (defaults to agent's own wallet)                  |
 
 ## Related Endpoints
 
 | Endpoint                      | Method | Description                              |
 | ----------------------------- | ------ | ---------------------------------------- |
-| `/v1/actions/bridge/chains`   | GET    | List supported destination chains        |
-| `/v1/actions/bridge/fee`      | POST   | Get fee estimate for a destination chain |
+| `/v1/actions/bridge/chains`   | GET    | List supported routing chains            |
+| `/v1/actions/bridge/fee`      | POST   | Get fee estimate for a bridge route      |
 | `/v1/actions/bridge`          | POST   | Execute a bridge transfer                |
 | `/v1/actions/bridge/status`   | POST   | Check the status of a bridge transaction |
 | `/v1/actions/estimate/bridge` | POST   | Dry-run bridge cost estimation           |
