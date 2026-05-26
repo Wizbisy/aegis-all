@@ -1,6 +1,8 @@
 ---
-title: 'Check Bridge Status'
-openapi: 'POST /v1/actions/bridge/status'
+title: "Check Bridge Status"
+openapi: "POST /v1/actions/bridge/status"
 ---
 
 Retrieve the live status of an ongoing cross-chain bridge transfer, monitoring blockchain confirmations and Circle consensus attestations.
+
+This endpoint expects a JSON body containing `txHash` with a full 66-character `0x...` transaction hash.

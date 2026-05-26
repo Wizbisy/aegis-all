@@ -1,6 +1,8 @@
 ---
-title: 'Cross-Chain Bridge'
-openapi: 'POST /v1/actions/bridge'
+title: "Cross-Chain Bridge"
+openapi: "POST /v1/actions/bridge"
 ---
 
 Perform cross-chain stablecoin bridging via Circle's Cross-Chain Transfer Protocol (CCTP) with gas relayer assistance.
+
+Request body fields for this route are `amount`, `toChain`, optional `fromChain`, and optional `recipient`.

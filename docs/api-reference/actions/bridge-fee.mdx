@@ -1,6 +1,8 @@
 ---
-title: 'Estimate Bridge Fee'
-openapi: 'POST /v1/actions/bridge/fee'
+title: "Estimate Bridge Fee"
+openapi: "POST /v1/actions/bridge/fee"
 ---
 
 Estimate the gas relayer and protocol fees required to complete a proposed cross-chain bridge transaction.
+
+`fromChain` is optional for route estimation and defaults to `ARC-TESTNET` when omitted.

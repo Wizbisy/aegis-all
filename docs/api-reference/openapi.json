@@ -430,30 +430,23 @@
                 "type": "object",
                 "required": [
                   "amount",
-                  "token",
-                  "sourceChain",
-                  "destinationChain",
-                  "recipientAddress"
+                  "toChain"
                 ],
                 "properties": {
                   "amount": {
                     "type": "string"
                   },
-                  "token": {
+                  "fromChain": {
                     "type": "string",
-                    "enum": [
-                      "USDC",
-                      "EURC"
-                    ]
+                    "description": "Optional source chain identifier. Defaults to ARC-TESTNET when omitted."
                   },
-                  "sourceChain": {
-                    "type": "string"
+                  "toChain": {
+                    "type": "string",
+                    "description": "Destination chain identifier"
                   },
-                  "destinationChain": {
-                    "type": "string"
-                  },
-                  "recipientAddress": {
-                    "type": "string"
+                  "recipient": {
+                    "type": "string",
+                    "description": "Optional recipient EVM address. Defaults to the agent wallet."
                   }
                 }
               }
@@ -471,8 +464,8 @@
                     "success": {
                       "type": "boolean"
                     },
-                    "message": {
-                      "type": "string"
+                    "result": {
+                      "type": "object"
                     }
                   }
                 }
