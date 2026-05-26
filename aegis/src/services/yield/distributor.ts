@@ -48,7 +48,6 @@ export async function runYieldDistributor(privateKey: `0x${string}`, targetApy =
   const now = BigInt(Math.floor(Date.now() / 1000));
   let elapsedSeconds = Number(now - lastYieldTimestamp);
 
-  // If this is the very first yield distribution, just simulate 1 hour of elapsed time
   if (lastYieldTimestamp === 0n || elapsedSeconds <= 0) {
     elapsedSeconds = 3600; 
   }
@@ -62,7 +61,6 @@ export async function runYieldDistributor(privateKey: `0x${string}`, targetApy =
 
   logger.info({ totalAssets: totalAssets.toString(), yieldAmount: yieldAmount.toString(), elapsedSeconds }, 'Calculated target yield');
 
-  // Check admin balance
   const adminBalance = await client.readContract({
     address: USDC_ADDRESS,
     abi: ERC20_ABI,
@@ -75,7 +73,6 @@ export async function runYieldDistributor(privateKey: `0x${string}`, targetApy =
     throw new Error('Insufficient USDC in distributor wallet');
   }
 
-  // Ensure allowance
   const allowance = await client.readContract({
     address: USDC_ADDRESS,
     abi: ERC20_ABI,
@@ -94,7 +91,6 @@ export async function runYieldDistributor(privateKey: `0x${string}`, targetApy =
     await client.waitForTransactionReceipt({ hash });
   }
 
-  // Distribute
   logger.info('Executing distributeYield...');
   const txHash = await client.writeContract({
     address: AEGIS_VAULT_ADDRESS,

@@ -18,8 +18,8 @@ async function _getBridgeStatus(input: BridgeStatusInput): Promise<unknown> {
 
   try {
     const client = getDcwClient();
-    const response = await client.getTransaction({ id: input.txHash });
-    const tx = response.data?.transaction;
+    const response = await client.listTransactions({ txHash: input.txHash });
+    const tx = response.data?.transactions?.[0];
 
     if (!tx) {
       return {
@@ -39,12 +39,11 @@ async function _getBridgeStatus(input: BridgeStatusInput): Promise<unknown> {
       updateDate: tx.updateDate,
     };
   } catch (error) {
-    // If the transaction ID isn't a Circle transaction ID, return a graceful response
     if (error instanceof Error && error.message.includes('404')) {
       return {
         txHash: input.txHash,
         status: 'UNKNOWN',
-        message: 'Transaction not found. This may be an onchain tx hash rather than a Circle transaction ID.',
+        message: 'Failed to check onchain status. Provide a Circle transaction id (UUID) to query Circle instead.',
       };
     }
     throw error;

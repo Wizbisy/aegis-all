@@ -81,7 +81,6 @@ export function toHttpError(error: unknown) {
     };
   }
 
-  // Handle Zod validation errors if they bubble up
   if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
     return {
       status: 400,

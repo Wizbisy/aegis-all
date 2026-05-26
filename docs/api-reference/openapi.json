@@ -430,6 +430,7 @@
                 "type": "object",
                 "required": [
                   "amount",
+                  "fromChain",
                   "toChain"
                 ],
                 "properties": {
@@ -438,7 +439,7 @@
                   },
                   "fromChain": {
                     "type": "string",
-                    "description": "Optional source chain identifier. Defaults to ARC-TESTNET when omitted."
+                    "description": "Source chain identifier"
                   },
                   "toChain": {
                     "type": "string",
@@ -454,8 +455,8 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Bridging request accepted",
+          "202": {
+            "description": "Bridge transfer accepted and processing in background",
             "content": {
               "application/json": {
                 "schema": {
@@ -465,7 +466,20 @@
                       "type": "boolean"
                     },
                     "result": {
-                      "type": "object"
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "example": "pending"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "auditId": {
+                          "type": "string",
+                          "description": "Use this ID to poll GET /v1/actions/status/:auditId for completion"
+                        }
+                      }
                     }
                   }
                 }
@@ -504,6 +518,91 @@
         ]
       }
     },
+    "/v1/actions/status/{auditId}": {
+      "get": {
+        "summary": "Query Async Action Status",
+        "description": "Poll the status of a long-running asynchronous action (e.g. cross-chain bridge). Returns the current status, transaction hash (when complete), and any error details.",
+        "tags": [
+          "Actions API"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          },
+          {
+            "AegisEmail": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "auditId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The auditId returned from the async action (e.g. bridge)"
+          },
+          {
+            "name": "X-Aegis-Email",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent email address"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Action status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string",
+                      "example": "CCTP_BRIDGE_USDC"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["PENDING", "PROCESSING", "SUCCESS", "FAILED"],
+                      "description": "Current status of the background task"
+                    },
+                    "txHash": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Transaction hash, available when status is SUCCESS"
+                    },
+                    "error": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Error message, available when status is FAILED"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found"
+          }
+        }
+      }
+    },
     "/v1/actions/bridge/fee": {
       "post": {
         "summary": "Estimate Bridge Fee",
@@ -518,6 +617,7 @@
               "schema": {
                 "type": "object",
                 "required": [
+                  "fromChain",
                   "toChain"
                 ],
                 "properties": {
@@ -525,7 +625,7 @@
                     "type": "string",
                     "minLength": 2,
                     "maxLength": 40,
-                    "description": "Optional source chain identifier. Defaults to ARC-TESTNET when omitted."
+                    "description": "Source chain identifier"
                   },
                   "toChain": {
                     "type": "string",

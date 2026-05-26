@@ -30,7 +30,6 @@ policyRouter.use('*', slidingWindowRateLimit({
   key: (c) => c.get('agent').id || getClientIp(c),
 }));
 
-// GET /policy -> Reads local Aegis limits
 policyRouter.get('/', async (c) => {
   const agent = c.get('agent');
   try {

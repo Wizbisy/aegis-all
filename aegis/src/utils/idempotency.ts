@@ -122,7 +122,6 @@ export const idempotencyMiddleware = createMiddleware(async (c: Context, next: N
 
   const rawKey = c.req.header('Idempotency-Key') || c.req.header('X-Idempotency-Key');
   
-  // 1. Strict UUID v4 Format Check
   const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!rawKey || !uuidV4Regex.test(rawKey)) {
     throw new AppError(400, 'X-Idempotency-Key must be a valid UUID v4 (e.g., 123e4567-e89b-12d3-a456-426614174000)', 'INVALID_IDEMPOTENCY_FORMAT');

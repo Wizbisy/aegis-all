@@ -63,9 +63,13 @@ export async function estimateBridge(toChain: string, amount: string, walletId?:
 
   logger.debug({ fromChain, toChain, amount, walletId }, 'Estimating CCTP bridge transfer');
 
+  if (!fromChain) {
+    throw new AppError(400, 'fromChain is required', 'BRIDGE_FROM_CHAIN_REQUIRED');
+  }
+
   const feeQuote = await getBridgeFee({
     toChain,
-    ...(fromChain ? { fromChain } : {}),
+    fromChain,
   });
   const totalCost = parsedAmount + Number(feeQuote.estimatedFeeUsdc);
 

@@ -49,8 +49,8 @@ export interface MarketplacePayOptions extends MarketplaceInspectOptions {
 }
 
 export interface BridgeQuoteInput {
+  fromChain: string;
   toChain: string;
-  fromChain?: string;
 }
 
 export interface BridgeTransferInput extends BridgeQuoteInput {

@@ -167,7 +167,6 @@ export const agentAuth = createMiddleware<AppBindings>(async (c, next) => {
     outcome: 'SUCCESS',
   });
 
-  // Verification safety net
   const isExempt = authExemptPaths.some(path => c.req.path === path);
   if (!isExempt) {
     const clientProvidedEmail = c.req.header('X-Aegis-Email');

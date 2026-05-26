@@ -61,7 +61,6 @@ export function slidingWindowRateLimit(options: {
 
     bucket.count += 1;
     
-    // Standard Rate Limit Headers
     const remaining = Math.max(0, options.limit - bucket.count);
     const resetSeconds = Math.ceil((bucket.resetAt - now) / 1000);
     

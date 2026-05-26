@@ -7,7 +7,9 @@ import { getRequestId } from './requestid.js';
 type AuditMetadata = Prisma.InputJsonObject;
 
 function hashJson(value: unknown) {
-  return createHash('sha256').update(JSON.stringify(value ?? {})).digest('hex');
+  return createHash('sha256').update(JSON.stringify(value ?? {}, (key, val) =>
+    typeof val === 'bigint' ? val.toString() : val
+  )).digest('hex');
 }
 
 export async function startAuditAction(input: {

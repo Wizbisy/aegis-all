@@ -90,6 +90,7 @@
               "api-reference/actions/bridge-fee",
               "api-reference/actions/bridge-status",
               "api-reference/actions/bridge-chains",
+              "api-reference/actions/async-status",
               "api-reference/actions/swap",
               "api-reference/actions/audit-ledger",
               "api-reference/actions/yield-vaults",
@@ -131,6 +132,14 @@
   },
   "navbar": {
     "links": [
+      {
+        "label": "Launch App",
+        "href": "https://aegisintent.xyz"
+      },
+      {
+        "label": "GitHub",
+        "href": "https://github.com/Wizbisy/aegiS"
+      },
       {
         "label": "Support",
         "href": "mailto:support@aegisintent.xyz"

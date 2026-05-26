@@ -13,7 +13,7 @@ export async function getBridgeFee(input: BridgeQuoteInput): Promise<{
   supportedChains: string[];
   note: string;
 }> {
-  const fromChain = resolveBridgeChain(input.fromChain ?? 'ARC-TESTNET');
+  const fromChain = resolveBridgeChain(input.fromChain);
   const toChain = resolveBridgeChain(input.toChain);
 
   const fee = estimateBridgeFee(fromChain, toChain);

@@ -1,0 +1,17 @@
+---
+title: "Async Action Status"
+openapi: "GET /v1/actions/status/{auditId}"
+---
+
+Poll the status of a long-running asynchronous action such as a cross-chain bridge transfer.
+
+When you execute a bridge via `POST /v1/actions/bridge`, the server returns a `202 Accepted` response with an `auditId`. Use this endpoint to poll for the final result.
+
+### Status Values
+
+| Status       | Meaning                                         |
+| ------------ | ----------------------------------------------- |
+| `PENDING`    | Action has been created but not yet started      |
+| `PROCESSING` | Action is actively running in the background    |
+| `SUCCESS`    | Action completed successfully. `txHash` is set  |
+| `FAILED`     | Action failed. `error` field contains details   |

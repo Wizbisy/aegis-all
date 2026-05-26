@@ -253,6 +253,27 @@ GET /v1/actions/bridge/chains
 }
 ```
 
+### Poll Async Action Status
+```
+GET /v1/actions/status/:auditId
+```
+Poll the status of a long-running async action (e.g. bridge). Pass the `auditId` from the bridge response.
+
+**Response (while processing):**
+```json
+{ "success": true, "action": "CCTP_BRIDGE_USDC", "status": "PROCESSING", "txHash": null, "error": null }
+```
+**Response (when complete):**
+```json
+{ "success": true, "action": "CCTP_BRIDGE_USDC", "status": "SUCCESS", "txHash": "0xabc...", "error": null }
+```
+**Response (on failure):**
+```json
+{ "success": true, "action": "CCTP_BRIDGE_USDC", "status": "FAILED", "txHash": null, "error": "Bridge failed at step ..." }
+```
+
+> **Status values:** `PENDING` → `PROCESSING` → `SUCCESS` or `FAILED`
+
 ---
 
 ## 3. Financial Mutations (Nonce + Idempotency Required)
@@ -296,13 +317,27 @@ POST /v1/actions/bridge
 {
   "toChain": "Ethereum_Sepolia",
   "amount": "50.00",
+  "fromChain": "ARC-TESTNET",
   "recipient": "0x0000000000000000000000000000000000000000"
 }
 ```
 * `toChain` — Required. Use exact chain name from `GET /actions/bridge/chains`
+* `fromChain` — Required. Source chain identifier
 * `amount` — USDC string
 * `recipient` — Optional EVM address (defaults to agent's own wallet)
-* `fromChain` — Optional (defaults to Arc Testnet)
+
+**⚡ This endpoint is ASYNCHRONOUS.** It returns `202 Accepted` immediately:
+```json
+{
+  "success": true,
+  "result": {
+    "state": "pending",
+    "message": "Bridge transfer is processing in the background. Poll GET /v1/actions/status/<auditId> to check progress.",
+    "auditId": "abc-123-def-456"
+  }
+}
+```
+**You MUST poll `GET /v1/actions/status/<auditId>` every 15–30 seconds until `status` is `SUCCESS` or `FAILED`.** Do NOT assume the bridge completed just because you got a 202.
 
 ### Deposit into Yield Vault
 ```
@@ -454,16 +489,21 @@ POST /v1/actions/swap/estimate
 POST /v1/actions/estimate/bridge
 ```
 ```json
-{ "toChain": "Ethereum_Sepolia", "amount": "50.00" }
+{ "fromChain": "ARC-TESTNET", "toChain": "Ethereum_Sepolia", "amount": "50.00" }
 ```
+* `fromChain` — Required. Source chain identifier
+* `toChain` — Required. Destination chain identifier
+* `amount` — USDC amount to bridge
 
 ### Get Bridge Fee Quote
 ```
 POST /v1/actions/bridge/fee
 ```
 ```json
-{ "toChain": "Ethereum_Sepolia" }
+{ "fromChain": "ARC-TESTNET", "toChain": "Ethereum_Sepolia" }
 ```
+* `fromChain` — Required. Source chain identifier
+* `toChain` — Required. Destination chain identifier
 
 ### Check Bridge Status
 ```
@@ -513,6 +553,7 @@ Before executing operations, evaluate:
 2. **Micropayment Budget**: Do not pay for data if oracle cost > 2% of trade size (unless trade > 100 USDC)
 3. **Always estimate first**: Call the estimate endpoints before executing swaps and bridges to verify costs
 4. **Yield Strategy**: Default to `multiYield` for deposits, but ensure `synthraWeight` is ≤ 80%.
+5. **Async Actions**: After executing a bridge, ALWAYS poll `GET /v1/actions/status/:auditId` until `status` is `SUCCESS` or `FAILED`. Report the final `txHash` to the user.
 
 ---
 

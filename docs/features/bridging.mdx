@@ -7,8 +7,11 @@ description: "Bridge USDC across chains using Circle CCTP"
 
 Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable AI agents to bridge USDC between supported blockchain networks. This allows agents operating on the Arc Network to move funds to and from other testnet chains like Base Sepolia, Ethereum Sepolia, Arbitrum Sepolia, and more.
 
-`/v1/actions/bridge` executes the transfer.
-`/v1/actions/bridge/fee` and `/v1/actions/estimate/bridge` can estimate route costs before execution.
+Bridge transfers execute **asynchronously**, the API returns an immediate `202 Accepted` response with an `auditId` that can be polled for completion.
+
+`POST /v1/actions/bridge` initiates the transfer.
+`GET /v1/actions/status/:auditId` polls for completion.
+`POST /v1/actions/bridge/fee` and `/v1/actions/estimate/bridge` can estimate route costs before execution.
 
 ## How It Works
 
@@ -25,7 +28,7 @@ Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable
   </Step>
 
   <Step title="Get a fee estimate">
-    Check the bridging fee for a specific route. `fromChain` is optional and defaults to Arc Testnet when omitted:
+    Check the bridging fee for a specific route. `fromChain` is required:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/fee \
@@ -38,7 +41,8 @@ Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable
   </Step>
 
   <Step title="Execute the bridge">
-    Submit the bridge transaction. For this mutation, include idempotency headers:
+    Submit the bridge transaction. For this mutation, include idempotency headers.
+    The response returns immediately with a `202 Accepted` status and an `auditId`:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/bridge \
@@ -54,21 +58,58 @@ Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable
       }'
     ```
 
+    **Response (202 Accepted):**
+    ```json
+    {
+      "success": true,
+      "result": {
+        "state": "pending",
+        "message": "Bridge transfer is processing in the background. Poll GET /v1/actions/status/<auditId> to check progress.",
+        "auditId": "abc-123-def-456"
+      }
+    }
+    ```
+
   </Step>
 
-  <Step title="Track bridge status">
-    Monitor bridge progress using the transaction hash (66-char `0x...` hex):
+  <Step title="Poll for completion">
+    Use the `auditId` from the bridge response to check progress:
+
+    ```bash
+    curl -X GET https://api.aegisintent.xyz/v1/actions/status/abc-123-def-456 \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -H "X-Aegis-Email: agent@example.com"
+    ```
+
+    **While processing:**
+    ```json
+    { "success": true, "action": "CCTP_BRIDGE_USDC", "status": "PROCESSING", "txHash": null }
+    ```
+
+    **When complete:**
+    ```json
+    { "success": true, "action": "CCTP_BRIDGE_USDC", "status": "SUCCESS", "txHash": "0xabc..." }
+    ```
+
+  </Step>
+
+  <Step title="Get deep bridge status (optional)">
+    Once you have the `txHash`, you can query the full on-chain bridge lifecycle:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/status \
       -H "Authorization: Bearer YOUR_TOKEN" \
       -H "X-Aegis-Email: agent@example.com" \
       -H "Content-Type: application/json" \
-      -d '{"txHash": "0x892a01f80e0cdbb01c6c1f7a3ef2f0f086c7f2f9f8f87d0b1246c8f4f7b1e9a"}'
+      -d '{"txHash": "0xabc..."}'
     ```
 
   </Step>
 </Steps>
+
+<Warning>
+  Cross-chain bridges can take **2–5 minutes** to finalize due to blockchain confirmation times. The async pattern prevents your agent from blocking while waiting. Poll the status endpoint every 15–30 seconds until `status` is `SUCCESS` or `FAILED`.
+</Warning>
 
 ## Bridge Parameters
 
@@ -76,15 +117,16 @@ Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable
 | ----------- | ------ | -------- | --------------------------------------------------------------------- |
 | `toChain`   | string | Yes      | Destination chain identifier (e.g. `"BASE-SEPOLIA"`, `"ETH-SEPOLIA"`) |
 | `amount`    | string | Yes      | Amount of USDC to bridge                                              |
-| `fromChain` | string | No       | Source chain identifier (defaults to `ARC-TESTNET`)                   |
+| `fromChain` | string | Yes      | Source chain identifier                                               |
 | `recipient` | string | No       | Destination address (defaults to agent's own wallet)                  |
 
 ## Related Endpoints
 
-| Endpoint                      | Method | Description                              |
-| ----------------------------- | ------ | ---------------------------------------- |
-| `/v1/actions/bridge/chains`   | GET    | List supported routing chains            |
-| `/v1/actions/bridge/fee`      | POST   | Get fee estimate for a bridge route      |
-| `/v1/actions/bridge`          | POST   | Execute a bridge transfer                |
-| `/v1/actions/bridge/status`   | POST   | Check the status of a bridge transaction |
-| `/v1/actions/estimate/bridge` | POST   | Dry-run bridge cost estimation           |
+| Endpoint                           | Method | Description                                   |
+| ---------------------------------- | ------ | --------------------------------------------- |
+| `/v1/actions/bridge/chains`        | GET    | List supported routing chains                 |
+| `/v1/actions/bridge/fee`           | POST   | Get fee estimate for a bridge route           |
+| `/v1/actions/bridge`               | POST   | Execute a bridge transfer (returns 202)       |
+| `/v1/actions/status/:auditId`      | GET    | Poll async action status (bridge, etc.)       |
+| `/v1/actions/bridge/status`        | POST   | Deep on-chain bridge status (requires txHash) |
+| `/v1/actions/estimate/bridge`      | POST   | Dry-run bridge cost estimation                |

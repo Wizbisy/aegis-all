@@ -46,14 +46,13 @@ async function _searchServices(options: MarketplaceSearchOptions | string): Prom
 
     const data = await response.json() as any;
     
-    // Map Circle's resource model to our internal ServiceEntry format
     const mappedServices = (data.items || []).map((item: any) => ({
-      id: item.resource, // Use URL as unique ID
+      id: item.resource,
       name: item.metadata?.provider?.name || 'Unknown Service',
       description: item.metadata?.provider?.description || item.metadata?.description || '',
       url: item.resource,
       priceUsdc: item.accepts?.[0]?.amount 
-        ? (Number(item.accepts[0].amount) / 1000000).toString() // Circle amounts are often in micro-USDC (6 decimals)
+        ? (Number(item.accepts[0].amount) / 1000000).toString() 
         : '0.00',
       category: item.metadata?.provider?.category || 'General',
       chain: item.accepts?.[0]?.network || 'Unknown',

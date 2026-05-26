@@ -68,14 +68,14 @@ const paySchema = z.object({
 });
 
 const bridgeSchema = z.object({
-  fromChain: z.string().min(2).max(40).optional(),
+  fromChain: z.string().min(2).max(40),
   toChain: z.string().min(2).max(40),
   recipient: evmAddressSchema.optional(),
   amount: usdcAmountSchema,
 });
 
 const bridgeFeeSchema = z.object({
-  fromChain: z.string().min(2).max(40).optional(),
+  fromChain: z.string().min(2).max(40),
   toChain: z.string().min(2).max(40),
 });
 
@@ -120,6 +120,7 @@ actionsRouter.get('/', (c) => {
       bridge: 'POST /v1/actions/bridge',
       bridgeFee: 'POST /v1/actions/bridge/fee',
       bridgeStatus: 'POST /v1/actions/bridge/status',
+      asyncStatus: 'GET /v1/actions/status/:auditId',
       bridgeChains: 'GET /v1/actions/bridge/chains',
       estimateTransfer: 'POST /v1/actions/estimate/transfer',
       estimatePay: 'POST /v1/actions/estimate/pay',
@@ -230,7 +231,6 @@ actionsRouter.post('/transfer', idempotencyMiddleware, async (c) => {
   }
 });
 
-// Bridge operations
 actionsRouter.get('/bridge/chains', (c) => {
   return c.json({ success: true, chains: listSupportedChains() });
 });
@@ -244,7 +244,7 @@ actionsRouter.post('/bridge/fee', async (c) => {
   try {
     const fee = await getBridgeFee({
       toChain: parsed.data.toChain,
-      ...(parsed.data.fromChain ? { fromChain: parsed.data.fromChain } : {}),
+      fromChain: parsed.data.fromChain,
     });
     return c.json({ success: true, fee });
   } catch (err) {
@@ -261,6 +261,34 @@ actionsRouter.post('/bridge/status', async (c) => {
   try {
     const status = await getBridgeStatus({ txHash: parsed.data.txHash });
     return c.json({ success: true, status });
+  } catch (err) {
+    return fail(c, err);
+  }
+});
+
+// GET /actions/status/:auditId -> Queries the status of an asynchronous action (e.g. bridge)
+actionsRouter.get('/status/:auditId', async (c) => {
+  const auditId = c.req.param('auditId');
+  const agent = c.get('agent');
+
+  try {
+    const audit = await db.auditLog.findFirst({
+      where: { id: auditId, agentId: agent.id },
+    });
+
+    if (!audit) {
+      return c.json({ success: false, error: 'Task not found' }, 404);
+    }
+
+    return c.json({
+      success: true,
+      action: audit.action,
+      status: audit.status,
+      txHash: audit.signature,
+      error: audit.error,
+      createdAt: audit.createdAt,
+      updatedAt: audit.updatedAt,
+    });
   } catch (err) {
     return fail(c, err);
   }
@@ -290,15 +318,38 @@ actionsRouter.post('/bridge', idempotencyMiddleware, async (c) => {
 
   try {
     await assertPolicyAllows(agent.id, parsed.data.amount, { excludeAuditId: audit.id });
-    const bridge = await bridgeUsdc({
+    bridgeUsdc({
       walletAddress: wallet.walletAddress,
+      fromChain: parsed.data.fromChain,
       toChain: parsed.data.toChain,
       amount: parsed.data.amount,
       idempotencyKey: idempotencyRecordId,
-      ...(parsed.data.fromChain ? { fromChain: parsed.data.fromChain } : {}),
       ...(parsed.data.recipient ? { recipient: parsed.data.recipient } : {}),
+    }).then(async (bridge) => {
+      const steps = (bridge as any)?.steps as Array<{ name?: string; txHash?: string }> | undefined;
+      const burnStep = steps?.find((s) => s.name?.toLowerCase() === 'burn');
+      const txHash = burnStep?.txHash ?? steps?.find((s) => s.txHash)?.txHash;
+      await completeAuditAction(audit.id, { 
+        ...(txHash ? { signature: txHash } : {}),
+        result: bridge 
+      }).catch(() => {});
+    }).catch(async (err) => {
+      const { logger } = await import('../utils/logger.js');
+      logger.error({ err, auditId: audit.id }, 'Async bridge execution failed');
+      await failAuditAction(audit.id, err).catch(() => {});
     });
-    return handleActionSuccess(c, audit.id, idempotencyRecordId, bridge);
+
+    const responseData = { 
+      state: 'pending', 
+      message: 'Bridge transfer is processing in the background. Poll GET /v1/actions/status/' + audit.id + ' to check progress.',
+      auditId: audit.id,
+    };
+    const body = { success: true, result: responseData };
+    
+    await completeIdempotency(idempotencyRecordId, 202, body);
+    await db.auditLog.update({ where: { id: audit.id }, data: { status: 'PROCESSING' }});
+
+    return c.json(body, 202);
   } catch (err) {
     return handleActionError(c, audit.id, idempotencyRecordId, err);
   }
@@ -341,8 +392,6 @@ actionsRouter.post('/pay', idempotencyMiddleware, async (c) => {
     return handleActionError(c, audit.id, idempotencyRecordId, err);
   }
 });
-
-// Estimation Operations
 
 // POST /actions/estimate/transfer -> Dry run transfer cost estimate
 actionsRouter.post('/estimate/transfer', async (c) => {

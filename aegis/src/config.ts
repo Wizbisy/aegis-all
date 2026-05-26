@@ -9,6 +9,7 @@ const envSchema = z.object({
   ARC_RPC_URL: z.string().url().optional(),
   ARC_TESTNET_RPC_URL: z.string().url().optional(),
   ARC_CHAIN: z.enum(['ARC-TESTNET']),
+  ALCHEMY_API_KEY: z.string().optional(),
   AEGIS_VAULT_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
   SYNTHRA_NFT_POSITION_MANAGER_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
   SYNTHRA_PAIRED_TOKEN_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/),

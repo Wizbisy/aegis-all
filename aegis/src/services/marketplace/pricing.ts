@@ -59,7 +59,6 @@ async function _inspectServicePayment(options: MarketplaceInspectOptions): Promi
       let sellerAddress: string | null = null;
       let rawAccepts: any[] = [];
 
-      // Detect protocol
       if (wwwAuthenticate?.includes('Payment')) {
         protocol = 'MPP';
       } else if (paymentRequired) {
@@ -76,7 +75,6 @@ async function _inspectServicePayment(options: MarketplaceInspectOptions): Promi
         }
       }
 
-      // 2. Try to parse the response body if header parsing didn't yield everything
       if (rawAccepts.length === 0) {
         try {
           const body = await response.json() as Record<string, unknown>;
@@ -85,17 +83,14 @@ async function _inspectServicePayment(options: MarketplaceInspectOptions): Promi
           }
           if (body.x402Version) protocol = 'x402';
         } catch {
-          // Body may not be JSON
         }
       }
 
-      // 3. Extract and normalize payment options
       for (const accept of rawAccepts) {
         if (accept.network && typeof accept.network === 'string') {
           acceptedChains.push(accept.network);
         }
         
-        // Handle amount normalization (respecting 6 decimals)
         if (accept.maxAmountRequired && typeof accept.maxAmountRequired === 'string') {
           priceUsdc = accept.maxAmountRequired;
         } else if (accept.amount && typeof accept.amount === 'string') {
@@ -121,7 +116,6 @@ async function _inspectServicePayment(options: MarketplaceInspectOptions): Promi
       };
     }
 
-    // Not a 402: service is freely accessible or returned another status
     return {
       serviceUrl: options.serviceUrl,
       requiresPayment: false,
