@@ -30,7 +30,7 @@ jobs:
       - run:
           name: Deploy to AWS
           command: |
-            ssh -o StrictHostKeyChecking=no $SSH_USER@$HOST_IP "cd aegis && git pull origin main && npm install && npm run prisma:generate && NODE_OPTIONS=--max_old_space_size=2048 npm run build && pm2 restart aegis-backend --update-env"
+            ssh -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USER@$HOST_IP "cd aegis && git pull origin main && npm install && npm run prisma:generate && NODE_OPTIONS=--max_old_space_size=2048 npm run build && pm2 restart aegis-backend --update-env"
 
 workflows:
   version: 2
