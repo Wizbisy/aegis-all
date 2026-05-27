@@ -154,14 +154,15 @@ process.on('SIGTERM', () => void shutdown('SIGTERM'))
 
 let distributorTimer: NodeJS.Timeout | null = null;
 if (process.env.YIELD_ADMIN_PRIVATE_KEY) {
-  logger.info('Yield Admin Private Key found. Starting background yield distributor cron (2% APY).');
+  const YIELD_DISTRIBUTOR_INTERVAL_MS = 60 * 60 * 1000;
+  logger.info(`Yield Admin Private Key found. Starting background yield distributor cron (every ${YIELD_DISTRIBUTOR_INTERVAL_MS / 1000}s, 2% APY).`);
   distributorTimer = setInterval(async () => {
     try {
       await runYieldDistributor(process.env.YIELD_ADMIN_PRIVATE_KEY as `0x${string}`, 0.02);
     } catch (err) {
       logger.error({ err }, 'Background yield distribution failed');
     }
-  }, 60 * 60 * 1000);
+  }, YIELD_DISTRIBUTOR_INTERVAL_MS);
 }
 
 const WEALTH_SENTINEL_INTERVAL_MS = 5 * 60 * 1000;
