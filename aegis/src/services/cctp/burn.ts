@@ -39,10 +39,45 @@ function getCircleWalletsAdapter() {
     throw new AppError(503, 'Circle API credentials are not configured for bridging', 'BRIDGE_NOT_CONFIGURED');
   }
 
-  return createCircleWalletsAdapter({
+  const adapter = createCircleWalletsAdapter({
     apiKey: config.CIRCLE_API_KEY,
     entitySecret: config.ENTITY_SECRET,
   });
+
+  const patchedAdapter = adapter as any;
+  const originalPrepareAction = adapter.prepareAction.bind(adapter);
+
+  patchedAdapter.prepareAction = async (action: string, params: any, ctx: any) => {
+    if (action === 'native.balanceOf') {
+      const publicClient = createPublicClient({
+        chain: ctx.chain as any,
+        transport: http(ctx.chain.rpcEndpoints[0]),
+      });
+      return {
+        execute: async () => await publicClient.getBalance({ address: params.walletAddress as `0x${string}` }),
+        estimate: async () => ({ gas: 0n, gasPrice: 0n, fee: '0' }),
+      };
+    }
+    if (action === 'usdc.balanceOf' || action === 'token.balanceOf') {
+      const publicClient = createPublicClient({
+        chain: ctx.chain as any,
+        transport: http(ctx.chain.rpcEndpoints[0]),
+      });
+      const tokenAddress = params.tokenAddress || ctx.chain.usdcAddress;
+      return {
+        execute: async () => await publicClient.readContract({
+          address: tokenAddress as `0x${string}`,
+          abi: [{ name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ type: 'uint256' }] }],
+          functionName: 'balanceOf',
+          args: [params.walletAddress as `0x${string}`],
+        }),
+        estimate: async () => ({ gas: 0n, gasPrice: 0n, fee: '0' }),
+      };
+    }
+    return originalPrepareAction(action as any, params, ctx);
+  };
+
+  return adapter;
 }
 
 function extractTxHash(message: unknown): string | undefined {
@@ -153,8 +188,7 @@ async function _bridgeUsdc(input: BridgeTransferInput): Promise<unknown> {
       let result;
       if (previousResult) {
         result = await kit.retry(previousResult, {
-          from: adapter,
-          to: adapter
+          from: adapter
         });
       } else {
         result = await kit.bridge({
@@ -164,9 +198,8 @@ async function _bridgeUsdc(input: BridgeTransferInput): Promise<unknown> {
             address: input.walletAddress,
           },
           to: {
-            adapter,
             chain: toChain as never,
-            address: input.recipient ?? input.walletAddress,
+            recipientAddress: input.recipient ?? input.walletAddress,
             useForwarder: true,
           },
           amount: input.amount,
