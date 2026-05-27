@@ -94,7 +94,7 @@ Bridge transfers execute **asynchronously**, the API returns an immediate `202 A
   </Step>
 
   <Step title="Get deep bridge status (optional)">
-    Once you have the `txHash`, you can query the full on-chain bridge lifecycle:
+    Once you have the `txHash`, you can query the full onchain bridge lifecycle:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/status \
@@ -128,5 +128,5 @@ Bridge transfers execute **asynchronously**, the API returns an immediate `202 A
 | `/v1/actions/bridge/fee`           | POST   | Get fee estimate for a bridge route           |
 | `/v1/actions/bridge`               | POST   | Execute a bridge transfer (returns 202)       |
 | `/v1/actions/status/:auditId`      | GET    | Poll async action status (bridge, etc.)       |
-| `/v1/actions/bridge/status`        | POST   | Deep on-chain bridge status (requires txHash) |
+| `/v1/actions/bridge/status`        | POST   | Deep onchain bridge status (requires txHash) |
 | `/v1/actions/estimate/bridge`      | POST   | Dry-run bridge cost estimation                |

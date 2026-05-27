@@ -86,9 +86,9 @@ export async function runYieldDistributor(privateKey: `0x${string}`, targetApy =
       address: USDC_ADDRESS,
       abi: ERC20_ABI,
       functionName: 'approve',
-      args: [AEGIS_VAULT_ADDRESS, yieldAmount * 1000n], // Approve extra to save gas next time
+      args: [AEGIS_VAULT_ADDRESS, yieldAmount * 1000n],
     });
-    await client.waitForTransactionReceipt({ hash });
+    await client.waitForTransactionReceipt({ hash, timeout: 600_000 });
   }
 
   logger.info('Executing distributeYield...');
@@ -99,7 +99,7 @@ export async function runYieldDistributor(privateKey: `0x${string}`, targetApy =
     args: [yieldAmount],
   });
 
-  await client.waitForTransactionReceipt({ hash: txHash });
+  await client.waitForTransactionReceipt({ hash: txHash, timeout: 600_000 });
   logger.info({ txHash }, 'Yield distributed successfully!');
 
   return { status: 'success', txHash, yieldAmount: yieldAmount.toString() };

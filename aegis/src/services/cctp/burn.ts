@@ -101,7 +101,7 @@ async function waitForTxOnChain(txHash: string, resolvedChainName: string, timeo
     try {
       const receipt = await client.getTransactionReceipt({ hash: txHash as `0x${string}` });
       if (receipt) {
-        logger.info({ txHash, status: receipt.status, blockNumber: Number(receipt.blockNumber) }, 'Transaction confirmed on-chain!');
+        logger.info({ txHash, status: receipt.status, blockNumber: Number(receipt.blockNumber) }, 'Transaction confirmed onchain!');
         return receipt.status === 'success';
       }
     } catch {
@@ -191,7 +191,7 @@ async function _bridgeUsdc(input: BridgeTransferInput): Promise<unknown> {
           if (txHash) {
             const confirmed = await waitForTxOnChain(txHash, fromChain);
             if (confirmed) {
-              logger.info({ txHash, step: failedStep?.name }, 'Tx confirmed on-chain! Patching step state and re-calling kit.retry()...');
+              logger.info({ txHash, step: failedStep?.name }, 'Tx confirmed onchain! Patching step state and re-calling kit.retry()...');
               if (failedStep) {
                 failedStep.state = 'success';
                 delete failedStep.error;
@@ -201,7 +201,7 @@ async function _bridgeUsdc(input: BridgeTransferInput): Promise<unknown> {
             }
           }
 
-          throw new AppError(502, `Bridge step "${failedStep?.name}" timed out and tx could not be confirmed on-chain. Tx: ${txHash}`, 'BRIDGE_TIMEOUT');
+          throw new AppError(502, `Bridge step "${failedStep?.name}" timed out and tx could not be confirmed onchain. Tx: ${txHash}`, 'BRIDGE_TIMEOUT');
         }
 
         logger.error({ failedStep: failedStep?.name, error: failedError, result }, 'CCTP bridge transfer failed');
@@ -224,7 +224,7 @@ async function _bridgeUsdc(input: BridgeTransferInput): Promise<unknown> {
         if (txHash) {
           const confirmed = await waitForTxOnChain(txHash, fromChain);
           if (confirmed) {
-            logger.info({ txHash }, 'Tx confirmed on-chain! Patching error result and re-calling kit.retry()...');
+            logger.info({ txHash }, 'Tx confirmed onchain! Patching error result and re-calling kit.retry()...');
             if (err.result) {
               const failedStep = err.result.steps?.find((s: any) => s.state === 'error');
               if (failedStep) {

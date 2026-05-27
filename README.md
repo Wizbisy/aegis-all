@@ -1,58 +1,81 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/Wizbisy/mintlify-docs/main/logo/dark.svg" alt="Aegis Logo" width="300" />
 
-  <h1>Aegis</h1>
-  <p><strong>Autonomous Wealth Infrastructure for AI Agents</strong></p>
+  <h2>Autonomous Wealth Engine for AI Agents</h2>
   <p>Built for the <a href="https://agora.thecanteenapp.com/">Agora Agents Hackathon</a> by Canteen × Circle</p>
 
   <p>
-    <img src="https://img.shields.io/badge/Network-Arc%20Testnet-00F396?style=for-the-badge&logo=circle" alt="Arc Testnet" />
-    <img src="https://img.shields.io/badge/Smart%20Contracts-Foundry-gray?style=for-the-badge" alt="Foundry" />
+    <img src="https://img.shields.io/badge/Network-Arc%20Testnet-black?style=for-the-badge&logo=circle" alt="Arc Testnet" />
+    <img src="https://img.shields.io/badge/Smart%20Contracts-Foundry-black?style=for-the-badge" alt="Foundry" />
     <img src="https://img.shields.io/badge/Backend-Node.js%20%7C%20Hono-black?style=for-the-badge&logo=nodedotjs" alt="Backend" />
-    <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql" alt="Postgres" />
+    <img src="https://img.shields.io/badge/Database-PostgreSQL-black?style=for-the-badge&logo=postgresql" alt="Postgres" />
   </p>
 </div>
 
 ---
 
-## 🚀 The Problem & The Solution
+## The Paradigm Shift
 
 **The Problem:** AI Agents are becoming highly intelligent, but they are financially paralyzed. They cannot safely hold money, they struggle to interact with complex DeFi protocols, and they cannot securely manage long-term wealth without risking user funds to hallucinated transactions.
 
-**The Solution:** **Aegis** is a security-hardened, intent-based financial layer designed explicitly for AI. It acts as an unbreakable firewall between the AI agent's brain and its wallet. Agents interact with Aegis via natural intents (e.g., "Yield my idle USDC"), and Aegis executes the transactions on the **Arc Network**, enforcing strict cryptographic policies, idempotency, and spending caps.
+**The Solution:** **Aegis** is a security-hardened, intent-based financial layer designed explicitly for AI. It acts as an unbreakable firewall between the AI agent's brain and its wallet. Agents interact with Aegis via natural intents (e.g., "Yield my idle USDC"), and Aegis executes the transactions natively on the **Arc Network**, enforcing strict cryptographic policies, idempotency, and spending caps.
 
-## ✨ Core Platform Features
+## Core Architecture
 
-### 🤖 Built for AI
-* **The `SKILL.md` Protocol**: Aegis provides a live, dynamic `SKILL.md` file that can be ingested into any LLM's system prompt (Claude, GPT-4, Gemini), instantly teaching the agent how to interact with the financial layer.
-* **Idempotency & Handshakes**: A strict 3-step nonce protocol prevents agents from accidentally double-spending or hallucinating transactions.
+To safely bridge intelligent agents to onchain execution, Aegis enforces a strict validation and intent-routing pipeline:
 
-### 💰 The Wealth Engine
-* **Auto-Compounding Yield**: Agents can deposit idle USDC into the Aegis ERC-4626 Vault to earn yield.
-* **Smart Routing**: Support for Limit Orders, DCA schedules, and multi-yield allocation.
-* **Tax Loss Harvesting**: Automated FIFO and LIFO cost-basis analysis executed directly on-chain.
+```mermaid
+flowchart TD
+    Agent["Your AI Agent"] -->|REST API| Gateway["Aegis API Gateway"]
+    Gateway --> Connect["Connect Router"]
+    Gateway --> Actions["Actions Router"]
+    Gateway --> Market["Marketplace Router"]
+    Gateway --> Policy["Policy Router"]
 
-### 🌉 Seamless Value Transfer
-* **Gasless Arc Transactions**: Gas is fully abstracted. Agents send USDC on the Arc L1 without needing native gas tokens.
-* **x402 Micropayments**: Agents can autonomously discover and pay for external APIs and data services.
-* **Circle CCTP**: Instant cross-chain bridging of USDC across 7+ testnets.
+    Actions --> PE["Policy Engine"]
+    PE --> Audit["Audit & Idempotency Layer"]
+
+    Audit --> DCW["Circle DCW\n(Wallets & Signing)"]
+    Audit --> CCTP["Circle CCTP\n(Cross-Chain Bridging)"]
+    Audit --> X402["x402 Services\n(Discovery API)"]
+    Audit --> AppKit["Circle App Kit\n(Swaps)"]
+    Audit --> Yield["Aegis Yield Vault\n(aUSDC)"]
+    Audit --> Synthra["Synthra V3\n(Concentrated Liquidity)"]
+
+    Sentinel["Wealth Sentinel\n(Background Cron)"] --> Actions
+    Distributor["Yield Distributor\n(Background Cron)"] --> Yield
+```
+
+### Built for Autonomy
+* **The `SKILL.md` Protocol**: Aegis provides a live, dynamic `SKILL.md` endpoint that can be ingested into any LLM's system prompt. This instantly teaches the agent how to natively negotiate transactions and understand platform constraints.
+* **Cryptographic Guardrails**: A strict idempotency protocol and policy engine completely prevents agents from double-spending or executing unapproved operations.
+
+### Autonomous Wealth Engine
+* **Auto-Compounding Yield**: Agents can securely deposit idle USDC into the Aegis ERC-4626 Vault to programmatically earn and compound yield over time.
+* **Smart Routing**: Advanced support for Limit Orders, DCA schedules, and multi-yield allocation strategies.
+* **Tax Loss Harvesting**: Automated FIFO and LIFO cost-basis analysis executed directly onchain.
+
+### Native Interoperability
+* **Arc Network Layer**: Built natively on the Arc Testnet for scalable, deterministic execution.
+* **Circle CCTP**: Instant cross-chain bridging of USDC across 7+ testnets, allowing agents to move liquidity securely.
+* **x402 Micropayments**: Agents can autonomously discover and pay for external APIs and data services directly from their Aegis balance.
 
 ---
 
-## 🏗️ Monorepo Architecture
+## Monorepo Structure
 
-Because Aegis is a massive full-stack infrastructure, the repository is cleanly modularized:
+Because Aegis is a comprehensive full-stack infrastructure, the repository is cleanly modularized:
 
 | Directory | Purpose | Repository Status |
 |-----------|---------|-------------------|
-| `aegis/` | The REST API backend. | [Standalone Repo](https://github.com/Wizbisy/aegis) |
-| `aegis-ui/` | The Next.js web dashboard for human oversight. | Included here |
+| `aegis/` | The core REST API backend and policy engine. | [Standalone Repo](https://github.com/Wizbisy/aegis) |
+| `aegis-ui/` | The Next.js control plane for administrative oversight. | Included here |
 | `contracts/` | Solidity smart contracts (ERC-4626 Vaults). | Included here |
-| `docs/` | The Mintlify documentation site. | [Standalone Repo](https://github.com/Wizbisy/mintlify-docs) |
+| `docs/` | The comprehensive Mintlify documentation site. | [Standalone Repo](https://github.com/Wizbisy/mintlify-docs) |
 
 ---
 
-## 🔧 Technical Stack
+## Technology Stack
 
 * **Blockchain**: Arc Testnet (Chain ID: `5042002`)
 * **Wallets**: Circle Developer Controlled Wallets (DCW)
@@ -63,25 +86,21 @@ Because Aegis is a massive full-stack infrastructure, the repository is cleanly 
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## Local Development
 
 ### 1. Backend Setup (`aegis/`)
 ```bash
 cd aegis
 npm install
-# Create your .env file
 cp .env.example .env 
-# Generate Prisma Client
 npx prisma generate
-# Start the dev server
 npm run dev
 ```
 
-### 2. Frontend Setup (`aegis-ui/`)
+### 2. Frontend Control Plane (`aegis-ui/`)
 ```bash
 cd aegis-ui
 npm install
-# Ensure .env.local points BACKEND_URL to your local or remote aegis API
 npm run dev
 ```
 
@@ -94,7 +113,7 @@ forge test
 
 ---
 
-## 📖 Comprehensive Documentation
+## Comprehensive Documentation
 
 Our full API reference, architecture guides, and agent integration tutorials are hosted on our dedicated Mintlify site.
 
@@ -108,7 +127,7 @@ npx mintlify dev
 
 ---
 
-## 🔗 Deployed Infrastructure Links
+## Live Infrastructure Links
 
 * **Live API**: `https://api.aegisintent.xyz`
 * **Agent Skill File**: `https://api.aegisintent.xyz/SKILL.md`

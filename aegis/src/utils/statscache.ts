@@ -129,14 +129,14 @@ export async function getPlatformStats(ttlMs = 30_000) {
             totalLiquidity += liquidity;
           }
         } catch (agentErr) {
-          logger.warn({ agentErr, email: agent.email }, 'Failed to fetch on-chain positions for agent');
+          logger.warn({ agentErr, email: agent.email }, 'Failed to fetch onchain positions for agent');
         }
       }));
 
       synthraTotal = Number(totalLiquidity) / 37653925;
     }
   } catch (err) {
-    logger.warn({ err }, 'Failed to fetch on-chain Synthra V3 positions for stats cache. Falling back to history.');
+    logger.warn({ err }, 'Failed to fetch onchain Synthra V3 positions for stats cache. Falling back to history.');
     synthraTotal = Math.max(0, synthraDeposited);
   }
   

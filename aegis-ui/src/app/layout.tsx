@@ -14,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Aegis Wealth Control',
+    default: 'Aegis | Autonomous Wealth Engine',
     template: '%s | Aegis',
   },
   description: 'Aegis is the control plane for autonomous Arc native agents, policies, and financial execution.',
