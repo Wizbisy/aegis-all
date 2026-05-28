@@ -34,6 +34,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta
+          name="talentapp:project_verification"
+          content="5e4e5ed62cc921f0b6d78da7c6dfa726eed3ed9cf64b33a2afee285059382b9e21296fb5e90d39f85e66c6080cf0ed81cd632b15f2b1a15eff116ab0ad4553cd"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
