@@ -2064,7 +2064,7 @@
     "/v1/actions/wealth/dca": {
       "post": {
         "summary": "Register DCA Schedule",
-        "description": "Register a recurring dollar-cost averaging schedule. The Wealth Sentinel executes each leg automatically at the specified interval.",
+        "description": "Register a recurring dollar-cost averaging schedule with a fixed number of orders. The Wealth Sentinel executes each leg automatically at the specified interval and marks the schedule as COMPLETED once all orders are fulfilled.",
         "tags": [
           "Actions API",
           "Wealth Engine"
@@ -2087,7 +2087,8 @@
                   "tokenIn",
                   "tokenOut",
                   "amountInPerTx",
-                  "frequencyHours"
+                  "frequencyHours",
+                  "totalOrders"
                 ],
                 "properties": {
                   "tokenIn": {
@@ -2105,6 +2106,12 @@
                   "frequencyHours": {
                     "type": "integer",
                     "example": 24
+                  },
+                  "totalOrders": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 30,
+                    "description": "Total number of recurring orders to execute before the schedule auto-completes"
                   }
                 }
               }

@@ -145,9 +145,17 @@ export async function runWealthSentinel() {
         const nextTime = new Date();
         nextTime.setHours(nextTime.getHours() + dca.frequencyHours);
 
+        const newOrdersExecuted = dca.ordersExecuted + 1;
+        const isCompleted = dca.totalOrders > 0 && newOrdersExecuted >= dca.totalOrders;
+
         await db.dcaSchedule.update({
           where: { id: dca.id },
-          data: { status: 'ACTIVE', nextExecution: nextTime, failures: 0 },
+          data: { 
+            status: isCompleted ? 'COMPLETED' : 'ACTIVE', 
+            nextExecution: nextTime, 
+            failures: 0,
+            ordersExecuted: newOrdersExecuted
+          },
         });
       } catch (err: any) {
         const errorMsg = String(err?.message || err || '').toLowerCase();

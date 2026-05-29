@@ -158,8 +158,10 @@ model DcaSchedule {
   tokenOut       String
   amountInPerTx  Decimal   @db.Decimal(18, 6)
   frequencyHours Int
+  totalOrders    Int       @default(0)
+  ordersExecuted Int       @default(0)
   nextExecution  DateTime
-  status         String    @default("ACTIVE") // ACTIVE, PAUSED, CANCELLED, PAUSED_INSUFFICIENT_FUNDS, FAILED
+  status         String    @default("ACTIVE") // ACTIVE, PAUSED, CANCELLED, PAUSED_INSUFFICIENT_FUNDS, FAILED, COMPLETED
   failures       Int       @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt

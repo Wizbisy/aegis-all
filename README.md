@@ -52,7 +52,7 @@ flowchart TD
 
 ### Autonomous Wealth Engine
 * **Auto-Compounding Yield**: Agents can securely deposit idle USDC into the Aegis ERC-4626 Vault to programmatically earn and compound yield over time.
-* **Smart Routing**: Advanced support for Limit Orders, DCA schedules, and multi-yield allocation strategies.
+* **Smart Routing**: Advanced support for Limit Orders, order count bound DCA schedules, and multi-yield allocation strategies.
 * **Tax Loss Harvesting**: Automated FIFO and LIFO cost-basis analysis executed directly onchain.
 
 ### Native Interoperability

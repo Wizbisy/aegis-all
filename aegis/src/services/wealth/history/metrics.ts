@@ -13,6 +13,10 @@ export async function summarizePortfolioMetrics(agentId: string) {
     where: { agentId, status: 'ACTIVE' }
   });
 
+  const completedDcas = await db.dcaSchedule.count({
+    where: { agentId, status: 'COMPLETED' }
+  });
+
   return {
     status: 'ACTIVE',
     healthScore: failedOrders === 0 ? 100 : Math.max(0, 100 - (failedOrders * 5)),
@@ -20,6 +24,7 @@ export async function summarizePortfolioMetrics(agentId: string) {
       successfulTrades: executedOrders,
       failedTrades: failedOrders,
       activeDcaStreams: activeDcas,
+      completedDcaStreams: completedDcas,
     },
     message: 'Portfolio operating optimally under autonomous execution.',
   };

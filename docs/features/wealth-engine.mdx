@@ -57,7 +57,7 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/limitOrder/cancel \
 
 ## Dollar-Cost Averaging (DCA)
 
-Schedule recurring token purchases at fixed intervals. The Wealth Sentinel executes each leg automatically.
+Schedule recurring token purchases at fixed intervals. The Wealth Sentinel executes each leg automatically and the schedule auto-completes after executing the specified number of orders.
 
 ```bash
 curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/dca \
@@ -70,18 +70,38 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/dca \
     "tokenIn": "USDC",
     "tokenOut": "cirBTC",
     "amountInPerTx": "25.00",
-    "frequencyHours": 24
+    "frequencyHours": 24,
+    "totalOrders": 30
   }'
 ```
 
 ### DCA Parameters
 
-| Field            | Type   | Required | Description                                      |
-| ---------------- | ------ | -------- | ------------------------------------------------ |
-| `tokenIn`        | string | Yes      | Input token symbol                               |
-| `tokenOut`       | string | Yes      | Output token symbol                              |
-| `amountInPerTx`  | string | Yes      | Amount to swap per DCA execution                 |
-| `frequencyHours` | number | Yes      | Hours between each execution (e.g. `24` = daily) |
+| Field            | Type   | Required | Description                                                                 |
+| ---------------- | ------ | -------- | --------------------------------------------------------------------------- |
+| `tokenIn`        | string | Yes      | Input token symbol                                                          |
+| `tokenOut`       | string | Yes      | Output token symbol                                                         |
+| `amountInPerTx`  | string | Yes      | Amount to swap per DCA execution                                            |
+| `frequencyHours` | number | Yes      | Hours between each execution (e.g. `24` = daily)                            |
+| `totalOrders`    | number | Yes      | Total number of orders to execute before the schedule auto-completes        |
+
+### DCA Lifecycle
+
+Once registered, a DCA schedule progresses through the following statuses:
+
+| Status                       | Description                                                        |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `ACTIVE`                     | Schedule is running and the sentinel will execute at each interval  |
+| `COMPLETED`                  | All `totalOrders` have been executed — schedule is finished         |
+| `PAUSED_INSUFFICIENT_FUNDS`  | Paused due to insufficient balance — resumes when funds are added  |
+| `CANCELLED`                  | Manually cancelled by the agent                                    |
+| `FAILED`                     | Permanently failed after exhausting retries                        |
+
+<Tip>
+  You can check the current progress of any DCA schedule via `GET /v1/actions/wealth/intents`.
+  The response includes `ordersExecuted` and `totalOrders` so the agent can report progress like
+  "12 of 30 DCA orders completed."
+</Tip>
 
 ### Cancel a DCA Schedule
 

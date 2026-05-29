@@ -9,6 +9,7 @@ export const dcaSchema = z.object({
   tokenOut: supportedTokens,
   amountInPerTx: usdcAmountSchema,
   frequencyHours: z.number().int().min(1).max(720),
+  totalOrders: z.number().int().min(1),
 }).refine((data) => data.tokenIn !== data.tokenOut, {
   message: 'tokenIn and tokenOut must be different',
 });
@@ -26,6 +27,8 @@ export async function registerDcaSchedule(agentId: string, intent: DcaIntent) {
       tokenOut: intent.tokenOut,
       amountInPerTx: intent.amountInPerTx,
       frequencyHours: intent.frequencyHours,
+      totalOrders: intent.totalOrders,
+      ordersExecuted: 0,
       nextExecution,
       status: 'ACTIVE',
     },

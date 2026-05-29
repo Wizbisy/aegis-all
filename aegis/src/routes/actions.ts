@@ -764,7 +764,7 @@ actionsRouter.post('/wealth/dca', idempotencyMiddleware, async (c) => {
     action: 'REGISTER_DCA_SCHEDULE',
     amountUsdc: parsed.data.amountInPerTx,
     idempotencyKey: idempotencyKeyHash,
-    metadata: { tokenIn: parsed.data.tokenIn, tokenOut: parsed.data.tokenOut, frequencyHours: parsed.data.frequencyHours },
+    metadata: { tokenIn: parsed.data.tokenIn, tokenOut: parsed.data.tokenOut, frequencyHours: parsed.data.frequencyHours, totalOrders: parsed.data.totalOrders },
   });
 
   try {

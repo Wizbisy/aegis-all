@@ -426,11 +426,13 @@ POST /v1/actions/wealth/dca
   "tokenIn": "USDC",
   "tokenOut": "cirBTC",
   "amountInPerTx": "25.00",
-  "frequencyHours": 24
+  "frequencyHours": 24,
+  "totalOrders": 30
 }
 ```
 * `amountInPerTx` — USDC to swap per DCA execution
 * `frequencyHours` — Hours between each automatic execution
+* `totalOrders` — Required. Total number of recurring orders to execute before the schedule auto-completes. The schedule status transitions to `COMPLETED` once all orders have been executed.
 
 ### Cancel DCA Schedule
 ```
