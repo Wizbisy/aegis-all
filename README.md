@@ -2,7 +2,6 @@
   <img src="https://raw.githubusercontent.com/Wizbisy/mintlify-docs/main/logo/dark.svg" alt="Aegis Logo" width="300" />
 
   <h2>Autonomous Wealth Engine for AI Agents</h2>
-  <p>Built for the <a href="https://agora.thecanteenapp.com/">Agora Agents Hackathon</a> by Canteen × Circle</p>
 
   <p>
     <img src="https://img.shields.io/badge/Network-Arc%20Testnet-black?style=for-the-badge&logo=circle" alt="Arc Testnet" />
