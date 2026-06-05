@@ -1,37 +1,36 @@
 ---
 title: Yield Vaults
-description: "Generate passive yield for AI agents through autonomous vaults"
+description: "Passive yield for AI agents via autonomous vaults"
 ---
 
 <Info>
   **Live on Arc Testnet** — The Aegis Yield system is fully operational. Agents
-  can autonomously deposit USDC, track their appreciating aUSDC shares, and
-  withdraw with accrued yield.
+  can deposit USDC, track their `aUSDC` shares, and withdraw with accrued yield.
 </Info>
 
 ## Autonomous Yield Generation
 
-Aegis includes an autonomous wealth generation engine that allows AI agents to deposit their idle USDC into yield-bearing smart contract vaults on the Arc Testnet.
+Aegis provides yield vaults on the Arc Testnet. AI agents can deposit idle USDC to earn yield.
 
-By depositing USDC, agents receive `aUSDC` (Aegis USDC) shares in return. The system automatically injects real USDC yield directly into the vault onchain, constantly driving up the `pricePerShare`. When an agent withdraws, they trade their `aUSDC` shares back for more USDC than they originally deposited.
+Depositing USDC returns `aUSDC` (Aegis USDC) shares. The system injects USDC yield directly into the vault onchain, which drives up `pricePerShare`. On withdrawal, the agent burns `aUSDC` for the original deposit plus the accrued yield.
 
 ## Smart Contract Integration
 
-The Aegis Yield Vault is a live, onchain smart contract deployed on the Arc Testnet.
+The Aegis Yield Vault is live on the Arc Testnet.
 
 **Vault Contract Address:** [`0xAf5f79495285b1d180858a225aDE518d371e0167`](https://testnet.arcscan.app/address/0xAf5f79495285b1d180858a225aDE518d371e0167)
 
 ### Automatic Allowlisting
 
-To protect the yield vault from sybil attacks and unauthorized extraction, the smart contract utilizes a strict allowlist. However, you don't need to manage this manually!
+The vault uses a strict allowlist to prevent sybil extraction. The backend handles this.
 
-Every time a new AI agent is provisioned and securely boarded onto Aegis, the backend automatically registers and **allowlists the agent's smart wallet address** onchain. This means your agents have zero friction, the moment they are created, they are already pre-approved by the vault to deposit USDC and begin earning yield autonomously.
+When an agent is boarded, Aegis automatically allows its wallet onchain. The agent is pre-approved to deposit USDC immediately.
 
 ## How It Works
 
 <Steps>
   <Step title="Check the Live Vault State">
-    Before depositing, your agent can view the active vault APY and the current share price:
+    Before depositing, your agent can view the active vault APY and share price:
 
     ```bash
     curl -X GET https://api.aegisintent.xyz/v1/actions/yield/vault \
@@ -39,7 +38,7 @@ Every time a new AI agent is provisioned and securely boarded onto Aegis, the ba
       -H "X-Aegis-Email: agent@example.com"
     ```
 
-    The response returns the live metrics from the smart contract:
+    The response returns live metrics from the smart contract:
 
     ```json
     {
@@ -57,7 +56,7 @@ Every time a new AI agent is provisioned and securely boarded onto Aegis, the ba
   </Step>
 
   <Step title="Deposit USDC">
-    Submit the deposit with an idempotency key and your agent's nonce. Aegis will automatically approve the USDC onchain and deposit it into the vault.
+    Submit the deposit with an idempotency key and nonce. Aegis handles the onchain USDC approval and deposit.
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/yield/deposit \
@@ -89,7 +88,7 @@ Every time a new AI agent is provisioned and securely boarded onto Aegis, the ba
   </Step>
 
   <Step title="Check Agent Yield Balance">
-    Track the exact number of `aUSDC` shares the agent holds and what their current USDC value is:
+    Track the exact number of `aUSDC` shares the agent holds and their USDC value:
 
     ```bash
     curl -X GET https://api.aegisintent.xyz/v1/actions/yield/balance \
@@ -112,7 +111,7 @@ Every time a new AI agent is provisioned and securely boarded onto Aegis, the ba
   </Step>
 
   <Step title="Withdraw USDC">
-    When ready, the agent can withdraw their `aUSDC` shares. The smart contract automatically exchanges them back for the original USDC plus all accrued yield.
+    When ready, the agent can withdraw its `aUSDC` shares. The smart contract exchanges them for the original USDC plus accrued yield.
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/yield/withdraw \
@@ -153,17 +152,17 @@ Every time a new AI agent is provisioned and securely boarded onto Aegis, the ba
 
 ## Auto-Compounding
 
-The yield distribution system runs fully autonomously in the background. Because yield is injected directly into the smart contract and the math scales mathematically based on total assets, the system effectively **auto-compounds** without requiring the agent to manually claim rewards or reinvest!
+Yield injects directly into the smart contract. Because share pricing scales with total assets, yield auto-compounds. Agents do not need to claim or reinvest.
 
 <Tip>
   Always fetch `GET /v1/actions/nonce` before executing a `deposit` or
-  `withdraw`. These are state mutating financial actions and strictly enforce
-  Aegis's non repeating nonce protection.
+  `withdraw`. These are state-mutating financial actions. They enforce
+  nonce protection.
 </Tip>
 
 ## Multi-Protocol Yield
 
-Beyond the Aegis aUSDC Vault, agents can also allocate capital into **Synthra V3 concentrated liquidity** positions for potentially higher returns. The [Wealth Engine](/features/wealth-engine) provides a `multiYield` endpoint that splits a single deposit across both protocols in an atomic action:
+Beyond the Aegis aUSDC Vault, agents can allocate capital into **Synthra V3 concentrated liquidity** for potentially higher returns. The [Wealth Engine](/features/wealth-engine) provides a `multiYield` endpoint that splits a single deposit across both protocols atomically:
 
 ```bash
 curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/multiYield \
@@ -179,6 +178,6 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/multiYield \
   }'
 ```
 
-To manually close a Synthra V3 position and collect accrued fees, use the [Synthra V3 Withdraw](/api-reference/actions/wealth-synthra-withdraw) endpoint.
+To close a Synthra V3 position and collect fees, use the [Synthra V3 Withdraw](/api-reference/actions/wealth-synthra-withdraw) endpoint.
 
-For full details on limit orders, DCA schedules, and portfolio metrics, see the [Wealth Engine](/features/wealth-engine) documentation.
+For details on limit orders, DCA schedules, and portfolio metrics, see the [Wealth Engine](/features/wealth-engine) documentation.

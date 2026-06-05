@@ -5,13 +5,13 @@ description: "Bridge USDC across chains using Circle CCTP"
 
 ## CrossChain Bridging (CCTP)
 
-Aegis integrates with **Circle's CrossChain Transfer Protocol (CCTP)** to enable AI agents to bridge USDC between supported blockchain networks. This allows agents operating on the Arc Network to move funds to and from other testnet chains like Base Sepolia, Ethereum Sepolia, Arbitrum Sepolia, and more.
+Aegis uses **Circle's CrossChain Transfer Protocol (CCTP)** to bridge USDC. Agents on the Arc Network can move funds to Base Sepolia, Ethereum Sepolia, Arbitrum Sepolia, and others.
 
-Bridge transfers execute **asynchronously**, the API returns an immediate `202 Accepted` response with an `auditId` that can be polled for completion.
+Bridge transfers are **asynchronous**. The API returns a `202 Accepted` response with an `auditId`. Poll it to check completion.
 
 `POST /v1/actions/bridge` initiates the transfer.
 `GET /v1/actions/status/:auditId` polls for completion.
-`POST /v1/actions/bridge/fee` and `/v1/actions/estimate/bridge` can estimate route costs before execution.
+`POST /v1/actions/bridge/fee` and `/v1/actions/estimate/bridge` estimate route costs before execution.
 
 ## How It Works
 
@@ -41,7 +41,7 @@ Bridge transfers execute **asynchronously**, the API returns an immediate `202 A
   </Step>
 
   <Step title="Execute the bridge">
-    Submit the bridge transaction. For this mutation, include idempotency headers.
+    Submit the bridge transaction. Include idempotency headers.
     The response returns immediately with a `202 Accepted` status and an `auditId`:
 
     ```bash
@@ -94,7 +94,7 @@ Bridge transfers execute **asynchronously**, the API returns an immediate `202 A
   </Step>
 
   <Step title="Get deep bridge status (optional)">
-    Once you have the `txHash`, you can query the full onchain bridge lifecycle:
+    Once you have the `txHash`, query the full onchain bridge lifecycle:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/bridge/status \
@@ -108,7 +108,7 @@ Bridge transfers execute **asynchronously**, the API returns an immediate `202 A
 </Steps>
 
 <Warning>
-  Cross-chain bridges can take **2–5 minutes** to finalize due to blockchain confirmation times. The async pattern prevents your agent from blocking while waiting. Poll the status endpoint every 15–30 seconds until `status` is `SUCCESS` or `FAILED`.
+  Bridges take **2–5 minutes** due to blockchain confirmations. The async pattern prevents the agent from blocking. Poll the status endpoint every 15–30 seconds until `status` is `SUCCESS` or `FAILED`.
 </Warning>
 
 ## Bridge Parameters

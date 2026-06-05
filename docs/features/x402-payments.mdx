@@ -1,15 +1,15 @@
 ---
 title: x402 Payments
-description: "Enable your agents to autonomously pay for API services using the x402 micropayment protocol"
+description: "Agents pay for API services using the x402 micropayment protocol"
 ---
 
 ## x402 Micropayments
 
-The x402 protocol enables AI agents to pay for API services using USDC, no credit cards, no subscriptions, no manual approvals. When an agent calls a 402-gated endpoint, Aegis handles the entire payment negotiation automatically.
+The x402 protocol lets AI agents pay for API services in USDC. No credit cards, no subscriptions. Call a 402-gated endpoint, and Aegis handles the payment negotiation.
 
 ## How x402 Works
 
-Aegis handles the entire payment negotiation and settlement automatically:
+Aegis manages payment negotiation and settlement:
 
 | Step  | Actor / Sender     | Receiver           | Action / Message            | Details & Outcome                                                                                         |
 | :---: | :----------------- | :----------------- | :-------------------------- | :-------------------------------------------------------------------------------------------------------- |
@@ -17,35 +17,32 @@ Aegis handles the entire payment negotiation and settlement automatically:
 | **2** | **Aegis API**      | Target Service     | Initial HTTP Request        | Aegis forwards the request to the target service without payment to trigger the x402 challenge.           |
 | **3** | **Target Service** | Aegis API          | `402 Payment Required`      | Target service rejects initial call and returns pricing and recipient wallet details in response headers. |
 | **4** | **Aegis API**      | Policy Engine (DB) | Limits Check                | Aegis verifies cost against agent's spending limits. If limits are exceeded, the flow aborts immediately. |
-| **5** | **Aegis API**      | Circle DCW         | Transaction Signing         | Aegis connects to the agent's secure Circle Developer Controlled Wallet to sign the USDC payment proof.   |
+| **5** | **Aegis API**      | Circle DCW         | Transaction Signing         | Aegis connects to the agent's Wallet to sign the USDC payment proof.   |
 | **6** | **Aegis API**      | Target Service     | Resubmit with Payment Proof | Aegis resubmits request to target service with the cryptographic payment proof attached.                  |
 | **7** | **Target Service** | Aegis &rarr; Agent | `200 OK` + Data Delivery    | Target service verifies payment, executes request, and returns data. Aegis forwards it back to the agent. |
 
 <Steps>
   <Step title="1. Agent requests a paid service">
-    Your agent calls `/v1/actions/pay` with the target service URL, the HTTP method, and a maximum amount it's willing to spend.
+    Call `/v1/actions/pay`. Provide the target URL, HTTP method, and spending limit.
   </Step>
 
 <Step title="2. Aegis negotiates the payment">
-  Aegis sends an initial request to the target service. If the service responds
-  with `402 Payment Required`, Aegis extracts the payment requirements (price,
-  token type, and recipient address) from the response headers.
+  Aegis sends an initial request to the target. If it returns `402 Payment Required`,
+  Aegis extracts the price and recipient address from the headers.
 </Step>
 
 <Step title="3. Policy check">
-  Before authorization, Aegis checks the price against the agent's spending
-  policies. If the cost exceeds any configured limit (per-transaction, daily,
-  weekly, or monthly budgets), the payment is immediately rejected.
+  Aegis checks the price against agent spending policies. If the cost exceeds limits,
+  the payment fails immediately.
 </Step>
 
 <Step title="4. Payment execution">
-  If the policy allows it, Aegis connects to the agent's secure Circle Developer
-  Controlled Wallet (DCW) to sign the USDC transaction authorization payload,
-  then resubmits the request with the payment proof attached.
+  Aegis connects to the agent's Circle Developer Controlled Wallet. It signs the USDC
+  payment proof, then resubmits the request.
 </Step>
 
   <Step title="5. Data returned">
-    The target service validates the cryptographic payment proof, processes the transaction, and returns the requested data. Aegis forwards the clean response back to the agent.
+    The target verifies the proof and returns the data. Aegis forwards it to the agent.
   </Step>
 </Steps>
 
@@ -77,7 +74,7 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/pay \
 
 ## Service Discovery
 
-Before paying, your agent can discover available x402 services through the [Marketplace API](/api-reference/marketplace/search). You can also inspect a specific service to check its pricing before committing:
+Agents discover x402 services through the [Marketplace API](/api-reference/marketplace/search). Inspect a service to check pricing before paying:
 
 ```bash
 curl -X POST https://api.aegisintent.xyz/v1/marketplace/inspect \
@@ -89,7 +86,7 @@ curl -X POST https://api.aegisintent.xyz/v1/marketplace/inspect \
 
 ## Cost Estimation
 
-Use the dry-run endpoint to estimate what a payment would cost without executing it:
+Estimate payment costs without executing:
 
 ```bash
 curl -X POST https://api.aegisintent.xyz/v1/actions/estimate/pay \
@@ -103,7 +100,6 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/estimate/pay \
 ```
 
 <Info>
-  The `maxAmount` field acts as a spending cap. If the service's actual price is
-  lower, the agent only pays the actual amount. If the price exceeds
-  `maxAmount`, the payment is rejected.
+  `maxAmount` is a spending cap. If the price is lower, the agent pays the actual amount.
+  If it exceeds `maxAmount`, the payment drops.
 </Info>

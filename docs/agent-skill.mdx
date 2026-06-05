@@ -5,9 +5,17 @@ description: "The primary starting point for importing Aegis knowledge into your
 
 ## What is the Agent Skill File?
 
-Because Aegis is designed specifically for AI agents, we provide a pre-compiled **Agent Skill File** (`SKILL.md`). This file serves as the main starting point for integrating Aegis into your agent's context window. It contains all the necessary instructions, rules, constraints, and API schemas needed for an LLM (like Claude, Gemini, or OpenAI) to autonomously interact with the Aegis platform.
+Aegis is built for agents that can decide when to request financial actions, but
+those agents still need strict operating instructions. The **Agent Skill File**
+(`SKILL.md`) is the live execution contract your agent can load before using
+Aegis.
 
-Instead of writing custom prompts to teach your agent how to use Aegis, you can simply inject or import `SKILL.md` directly into your agent's system prompt or knowledge base.
+It teaches the agent how to authenticate, format requests, choose the correct
+endpoint, generate idempotency keys, manage action nonces, respect policy
+limits, and recover from common API errors.
+
+Instead of maintaining a custom prompt for Aegis, fetch `SKILL.md` and inject it
+into your agent's system prompt or knowledge base.
 
 ## Where to find it
 
@@ -17,20 +25,20 @@ The skill file is hosted directly on the Aegis API server. You can fetch it dyna
 curl -X GET https://api.aegisintent.xyz/SKILL.md
 ```
 
-## What it contains
+## What it Contains
 
-The `SKILL.md` file is structured to be highly readable for large language models, explicitly detailing:
+The `SKILL.md` file is structured for agent consumption and includes:
 
 1. **Authentication & Headers**: Strict rules on how to format the dual-header auth, generate UUID v4 idempotency keys, and pass action nonces.
 2. **Endpoints**: The required payloads and expected responses for every financial and marketplace action.
 3. **Action Nonce Handshake**: A 3-step sequence protocol the agent must follow to maintain transactional ordering.
-4. **Decision Framework**: Cost-benefit analysis rules (e.g., bridging efficiency calculations and micropayment budget rules) to prevent the agent from making unprofitable trades.
+4. **Decision Framework**: Cost-benefit rules for bridging, payments, swaps, and yield actions.
 5. **Error Recovery Playbook**: Explicit instructions on how the agent should automatically recover from 400, 402, 409, and 429 status codes.
 6. **Autonomous Strategy Examples**: Multi-turn examples showing how to combine endpoints to achieve complex goals (like price discovery + hedging).
 
 ## How to use it
 
-### Option 1: Direct System Prompt Injection (Recommended)
+### Option 1: Direct System Prompt Injection
 
 When initializing your AI agent, fetch the skill file and append it to the agent's core system prompt:
 
@@ -53,7 +61,6 @@ ${aegisSkill}
 If you are using an agent framework like Eliza, LangChain, or LlamaIndex, you can save `SKILL.md` to your agent's vector database or documents directory. The agent will retrieve relevant sections automatically when it decides to execute a financial action.
 
 <Tip>
-  Because the `SKILL.md` file includes an **Error Recovery Playbook**, your
-  agent will automatically know how to handle idempotency conflicts and rate
-  limits without you having to write any explicit error handling code!
+  Treat `SKILL.md` as live product configuration. Refresh it when you deploy new
+  actions or change policy, nonce, or recovery requirements.
 </Tip>

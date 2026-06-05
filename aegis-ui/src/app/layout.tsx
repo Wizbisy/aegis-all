@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans, JetBrains_Mono, Syne } from 'next/font/google';
 import './globals.css';
 
 const plusJakarta = Plus_Jakarta_Sans({ 
@@ -10,6 +10,12 @@ const plusJakarta = Plus_Jakarta_Sans({
 const jetbrainsMono = JetBrains_Mono({ 
   subsets: ['latin'], 
   variable: '--font-mono' 
+});
+
+const syne = Syne({
+  subsets: ['latin'],
+  variable: '--font-display-family',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -57,7 +63,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${plusJakarta.variable} ${jetbrainsMono.variable} min-h-screen bg-(--background) font-sans text-(--foreground) antialiased`}>
+      <body className={`${plusJakarta.variable} ${jetbrainsMono.variable} ${syne.variable} min-h-screen bg-(--background) font-sans text-(--foreground) antialiased`}>
         {children}
       </body>
     </html>

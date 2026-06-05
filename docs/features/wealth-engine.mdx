@@ -1,23 +1,23 @@
 ---
 title: Wealth Engine
-description: "Autonomous portfolio management with limit orders, DCA schedules, multi-yield allocation, and Synthra V3 concentrated liquidity"
+description: "Autonomous portfolio management: limit orders, DCA, multi-yield allocation, and Synthra V3 liquidity"
 ---
 
 <Info>
-  **Live on Arc Testnet** — The Aegis Wealth Engine is fully operational. Agents
-  can register limit orders, schedule DCA strategies, allocate across multiple
-  yield protocols, and withdraw from Synthra V3 positions.
+  **Live on Arc Testnet** - The Aegis Wealth Engine is fully operational. Agents
+  can register limit orders, schedule DCA strategies, allocate across yield
+  protocols, and withdraw from Synthra V3.
 </Info>
 
 ## Overview
 
-The Aegis Wealth Engine is an autonomous portfolio management layer that gives AI agents access to advanced DeFi strategies beyond basic transfers and swaps. It combines intent-based order execution, dollar-cost averaging, multi-protocol yield allocation, and concentrated liquidity management into a single cohesive API.
+The Aegis Wealth Engine handles portfolio management for AI agents. It wraps limit orders, DCA schedules, yield allocation, and concentrated liquidity into one API. Agents get access to DeFi strategies without writing custom execution logic.
 
-A background **Wealth Sentinel** process runs every 5 minutes, scanning all active intents (limit orders and DCA schedules) and automatically executing them when market conditions are met.
+A background **Wealth Sentinel** runs every 5 minutes. It scans open limit orders and DCA schedules, then executes them when conditions match the trigger.
 
 ## Limit Orders
 
-Register conditional swap orders that execute automatically when a target price is reached.
+Register conditional swaps. They execute when the target price hits.
 
 ```bash
 curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/limitOrder \
@@ -43,7 +43,7 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/limitOrder \
 | `tokenOut`    | string | Yes      | Output token symbol (e.g. `"EURC"`)                              |
 | `amountIn`    | string | Yes      | Amount of the input token to swap                                |
 | `targetPrice` | string | Yes      | The price threshold that triggers execution                      |
-| `condition`   | string | Yes      | `"LTE"` (execute when price ≤ target) or `"GTE"` (price ≥ target) |
+| `condition`   | string | Yes      | `"LTE"` (price is less than or equal to target) or `"GTE"` (price is greater than or equal to target) |
 
 ### Cancel a Limit Order
 
@@ -57,7 +57,7 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/limitOrder/cancel \
 
 ## Dollar-Cost Averaging (DCA)
 
-Schedule recurring token purchases at fixed intervals. The Wealth Sentinel executes each leg automatically and the schedule auto-completes after executing the specified number of orders.
+Schedule recurring token purchases. The Wealth Sentinel handles each execution. The schedule auto-completes when the total order count is met.
 
 ```bash
 curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/dca \
@@ -81,25 +81,25 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/dca \
 | ---------------- | ------ | -------- | --------------------------------------------------------------------------- |
 | `tokenIn`        | string | Yes      | Input token symbol                                                          |
 | `tokenOut`       | string | Yes      | Output token symbol                                                         |
-| `amountInPerTx`  | string | Yes      | Amount to swap per DCA execution                                            |
+| `amountInPerTx`  | string | Yes      | Amount to swap per execution                                                |
 | `frequencyHours` | number | Yes      | Hours between each execution (e.g. `24` = daily)                            |
-| `totalOrders`    | number | Yes      | Total number of orders to execute before the schedule auto-completes        |
+| `totalOrders`    | number | Yes      | Total number of orders to execute before stopping                           |
 
 ### DCA Lifecycle
 
-Once registered, a DCA schedule progresses through the following statuses:
+DCA schedules move through these states:
 
 | Status                       | Description                                                        |
 | ---------------------------- | ------------------------------------------------------------------ |
-| `ACTIVE`                     | Schedule is running and the sentinel will execute at each interval  |
-| `COMPLETED`                  | All `totalOrders` have been executed — schedule is finished         |
-| `PAUSED_INSUFFICIENT_FUNDS`  | Paused due to insufficient balance — resumes when funds are added  |
-| `CANCELLED`                  | Manually cancelled by the agent                                    |
-| `FAILED`                     | Permanently failed after exhausting retries                        |
+| `ACTIVE`                     | Running. The sentinel executes at each interval.                   |
+| `COMPLETED`                  | All `totalOrders` finished.                                        |
+| `PAUSED_INSUFFICIENT_FUNDS`  | Paused. Resumes when wallet is funded.                             |
+| `CANCELLED`                  | Manually cancelled by the agent.                                   |
+| `FAILED`                     | Permanently failed after exhausting retries.                       |
 
 <Tip>
-  You can check the current progress of any DCA schedule via `GET /v1/actions/wealth/intents`.
-  The response includes `ordersExecuted` and `totalOrders` so the agent can report progress like
+  Check the progress of any DCA schedule via `GET /v1/actions/wealth/intents`.
+  The response includes `ordersExecuted` and `totalOrders`, so the agent can report
   "12 of 30 DCA orders completed."
 </Tip>
 
@@ -115,7 +115,7 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/dca/cancel \
 
 ## Multi-Yield Allocation
 
-Split a deposit across multiple yield protocols in a single atomic action. Currently supports the **Aegis aUSDC Vault** and **Synthra V3 Concentrated Liquidity**.
+Split a single deposit across multiple yield protocols. Currently supports the **Aegis aUSDC Vault** and **Synthra V3**.
 
 ```bash
 curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/multiYield \
@@ -136,17 +136,17 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/multiYield \
 | Field           | Type   | Required | Description                                                              |
 | --------------- | ------ | -------- | ------------------------------------------------------------------------ |
 | `amountUsdc`    | string | Yes      | Total USDC amount to allocate                                            |
-| `aegisWeight`   | number | Yes      | Percentage allocated to the Aegis aUSDC Vault (0–100)                    |
-| `synthraWeight` | number | Yes      | Percentage allocated to Synthra V3 concentrated liquidity (0–100, max 80) |
+| `aegisWeight`   | number | Yes      | Percentage for the Aegis aUSDC Vault (0-100)                             |
+| `synthraWeight` | number | Yes      | Percentage for Synthra V3 (0-100, max 80)                                |
 
 <Warning>
-  `aegisWeight` and `synthraWeight` must add up to **100**. To protect agents
-  from excessive external protocol risk, `synthraWeight` is capped at **80%**.
+  `aegisWeight` and `synthraWeight` must add up to **100**. To limit exposure
+  to external protocol risk, `synthraWeight` caps at **80%**.
 </Warning>
 
 ## Synthra V3 Withdrawal
 
-Manually close a Synthra V3 concentrated liquidity position and collect all accrued fees back to USDC.
+Close a Synthra V3 position and sweep all accrued fees to USDC.
 
 ```bash
 curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/yield/synthra/withdraw \
@@ -157,7 +157,7 @@ curl -X POST https://api.aegisintent.xyz/v1/actions/wealth/yield/synthra/withdra
   -H "X-Aegis-Nonce: 3"
 ```
 
-No request body is required. The system automatically identifies the agent's active Synthra position and closes it, collecting all liquidity and earned fees.
+No request body needed. The system finds the agent's active Synthra position, closes it, and collects the liquidity and fees.
 
 ## Portfolio Monitoring
 
@@ -183,17 +183,16 @@ curl -X GET https://api.aegisintent.xyz/v1/actions/wealth/metrics \
 
 ## Wealth Sentinel
 
-The Wealth Sentinel is an autonomous background process that runs every **5 minutes**. It:
+The Wealth Sentinel runs in the background every 5 minutes. It:
 
-1. Scans all `PENDING` limit orders and checks if market prices meet the trigger condition
-2. Scans all active DCA schedules and checks if enough time has elapsed since the last execution
-3. Automatically executes matching intents using the agent's Circle Developer Controlled Wallet
-4. Logs all executions to the audit trail for full transparency
+1. Checks `PENDING` limit orders against current market prices.
+2. Checks active DCA schedules against elapsed time.
+3. Executes matching intents via the agent's Circle wallet.
+4. Writes the execution to the audit trail.
 
 <Tip>
-  The Wealth Sentinel operates fully autonomously — once you register a limit
-  order or DCA schedule, you don't need to call any additional endpoints. The
-  system handles execution, nonce management, and audit logging automatically.
+  The Sentinel runs on its own. Register the order or schedule, then walk away.
+  It handles execution, nonces, and audit logs.
 </Tip>
 
 ## Related Endpoints

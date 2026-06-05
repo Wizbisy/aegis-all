@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Aegis",
+  "name": "Aegis Developer Docs",
   "colors": {
     "primary": "#00F396",
     "light": "#5DFFC5",
@@ -14,7 +14,7 @@
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Start Here",
             "pages": [
               "introduction",
               "quickstart",
@@ -23,13 +23,15 @@
             ]
           },
           {
-            "group": "Architecture",
+            "group": "How Aegis Works",
             "pages": [
-              "architecture/overview"
+              "architecture/overview",
+              "security/policy-engine",
+              "security/security"
             ]
           },
           {
-            "group": "Core Features",
+            "group": "Agent Actions",
             "pages": [
               "features/transfers",
               "features/x402-payments",
@@ -37,19 +39,11 @@
               "features/bridging",
               "features/yield",
               "features/wealth-engine",
-              "features/tax-harvesting",
-              "features/risk-monitoring"
+              "features/tax-harvesting"
             ]
           },
           {
-            "group": "Security & Policies",
-            "pages": [
-              "security/policy-engine",
-              "security/security"
-            ]
-          },
-          {
-            "group": "Advanced",
+            "group": "Operations",
             "pages": [
               "advanced/error-handling",
               "advanced/idempotency",
@@ -138,7 +132,7 @@
       },
       {
         "label": "GitHub",
-        "href": "https://github.com/Wizbisy/aegiS"
+        "href": "https://github.com/Wizbisy/aegis"
       },
       {
         "label": "Support",

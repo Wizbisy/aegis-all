@@ -5,7 +5,7 @@ description: "Send USDC to any EVM address on the Arc Network"
 
 ## USDC Transfers
 
-Aegis enables your AI agents to send USDC to any EVM-compatible address on the Arc Network. Transfers are gas abstracted. Since Arc uses USDC as the native gas token, your agent doesn't need to hold a separate token to pay for gas fees.
+Agents send USDC to EVM addresses on the Arc Network. Transfers are gas abstracted. Arc uses USDC as the native gas token, so agents don't need a separate token for gas fees.
 
 Every transfer is:
 
@@ -17,7 +17,7 @@ Every transfer is:
 
 <Steps>
   <Step title="Estimate fees">
-    Before executing a transfer, your agent can estimate the gas cost without spending anything:
+    Estimate the gas cost without spending:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/estimate/transfer \
@@ -30,12 +30,12 @@ Every transfer is:
       }'
     ```
 
-    The response includes real-time gas estimates at low, medium, and high fee levels, plus a balance sufficiency check.
+    The response returns real time gas estimates (low, medium, high) and checks balance sufficiency.
 
   </Step>
 
   <Step title="Execute the transfer">
-    When ready, submit the transfer with an idempotency key and nonce:
+    Submit the transfer with an idempotency key and nonce:
 
     ```bash
     curl -X POST https://api.aegisintent.xyz/v1/actions/transfer \
@@ -86,6 +86,5 @@ On the Arc Network, USDC is the native gas token. This means:
 <Tip>
   Use the `/v1/actions/estimate/transfer` endpoint to get real-time fee
   estimates before committing to a transfer. The estimate includes `low`,
-  `medium`, and `high` fee levels so your agent can choose the appropriate
-  speed.
+  `medium`, and `high` fee levels so your agent can choose the appropriate speed.
 </Tip>

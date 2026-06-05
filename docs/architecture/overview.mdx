@@ -5,7 +5,14 @@ description: "How Aegis is structured and how the components fit together"
 
 ## System Architecture
 
-Aegis is a secure REST API that acts as an orchestration layer between your AI agents and the blockchain. It does not hold private keys, all cryptographic signing is delegated to **Circle's Developer Controlled Wallets (DCW)** infrastructure.
+Aegis is the control plane between an autonomous AI agent and onchain USDC
+execution. Agents submit intents through a REST API; Aegis authenticates the
+agent, validates policy, protects retries with idempotency, checks action
+ordering with nonces, and only then routes execution to Circle and Arc
+infrastructure.
+
+Aegis does not expose private keys to the agent. Wallet creation and signing are
+handled by **Circle Developer Controlled Wallets (DCW)**.
 
 ```mermaid
 flowchart TD
@@ -33,34 +40,36 @@ flowchart TD
 
 ### API Gateway
 
-All routes are organized into modular routers:
+The gateway exposes product-specific routers instead of a generic wallet API:
 
 | Router      | Path                | Purpose                                                          |
 | ----------- | ------------------- | ---------------------------------------------------------------- |
 | Connect     | `/v1/connect/*`     | Agent onboarding and token management                            |
-| Actions     | `/v1/actions/*`     | Financial operations (transfer, pay, bridge, swap, yield, wealth) |
+| Actions     | `/v1/actions/*`     | Policy-checked financial operations: transfer, pay, bridge, swap, yield, wealth |
 | Marketplace | `/v1/marketplace/*` | x402 service discovery and inspection                            |
 | Policy      | `/v1/policy`        | Spending limit configuration                                     |
 
 ### Circle DCW Integration
 
-Circle's Developer Controlled Wallets SDK handles:
+Circle Developer Controlled Wallets handle:
 
 - EOA wallet creation on the **Arc Network** for each agent
-- Server side transaction signing without exposing private keys
-- USDC transfers with gas abstraction (Arc uses USDC as native gas)
-- Real time fee estimation
+- Server-side transaction signing without exposing private keys
+- USDC transfers with gas abstraction because Arc uses USDC as native gas
+- Real-time fee estimation
 
 ### Policy Engine
 
-Every financial action passes through the policy engine before execution. It checks the requested amount against four configurable limits:
+Every financial action passes through the policy engine before execution. It
+checks the requested amount against four configurable limits:
 
 - **Per-transaction**: Maximum USDC per single action
 - **Daily**: Rolling 24-hour spending cap
 - **Weekly**: Rolling 7-day spending cap
 - **Monthly**: Rolling 30-day spending cap
 
-If any limit would be exceeded, the action is rejected before it reaches Circle. See [Policy Engine](/security/policy-engine) for details.
+If any limit would be exceeded, the action is rejected before it reaches Circle.
+See [Policy Engine](/security/policy-engine) for details.
 
 ### Audit Layer
 
@@ -73,7 +82,9 @@ Every financial action is logged with:
 
 ### Database & State
 
-All state is safely persisted in the database, including agent records, API tokens (hashed), policy configs, audit logs, idempotency records, connect challenges, wealth intents (limit orders and DCA schedules), and yield position metadata.
+All state is persisted in the database, including agent records, hashed API
+tokens, policy configs, audit logs, idempotency records, connect challenges,
+wealth intents, and yield position metadata.
 
 ### Yield Vault & Synthra V3
 
@@ -82,7 +93,8 @@ Aegis integrates two yield protocols:
 - **Aegis aUSDC Vault** (`0xAf5f...`): A simple deposit/withdraw vault where agents earn yield on idle USDC. A background **Yield Distributor** injects real USDC yield hourly.
 - **Synthra V3**: Concentrated liquidity positions on a Uniswap V3-style AMM deployed on Arc Testnet. Agents can provide liquidity in tight price ranges for higher capital efficiency.
 
-The `multiYield` endpoint enables agents to split deposits across both protocols in a single atomic action.
+The `multiYield` endpoint enables agents to split deposits across both protocols
+in a single action.
 
 ### Wealth Sentinel
 
@@ -109,7 +121,8 @@ flowchart LR
 
 ## Network
 
-Aegis operates on the **Arc Testnet**: a Circle backed EVM chain where USDC is the native gas token. No separate gas token needed.
+Aegis operates on **Arc Testnet**, a Circle-backed EVM chain where USDC is the
+native gas token. Agents do not need to manage a separate gas asset.
 
 | Property         | Value              |
 | ---------------- | ------------------ |

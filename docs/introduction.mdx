@@ -1,106 +1,91 @@
 ---
 title: Introduction
+description: "Build AI agents that can safely hold, spend, bridge, and manage USDC on Arc"
 ---
 
-Welcome to the Aegis API documentation.
+## What is Aegis?
 
-Aegis is a secure financial infrastructure layer built for **autonomous AI Agents**. Through a single API, developers can provision programmable wallets for their agents, enforce strict spending policies, and enable agents to autonomously discover and pay for external API services using the **x402 Micropayment** protocol on the **Arc Network**.
+Aegis is a policy-hardened financial execution layer for autonomous AI agents.
+It sits between an agent and its wallet so the agent can request financial
+actions without receiving unchecked control over user funds.
 
-This documentation explains how Aegis works, what you can build with it, and how to get started, from your first API call to live autonomous payments.
+Through one REST API, an agent can onboard a wallet, hold USDC, pay x402-gated
+services, transfer funds, bridge with Circle CCTP, swap supported assets, deposit
+idle USDC into yield, and register longer-running wealth intents such as limit
+orders or DCA schedules.
 
-### What is Aegis?
+## Why Aegis Exists
 
-Aegis is the financial backbone for AI agent economies. It gives your agents the ability to hold, spend, and manage money safely.
+AI agents are increasingly able to plan and negotiate, but direct access to a
+wallet is still risky. A hallucinated destination, repeated retry, stale nonce,
+or overspend can become an irreversible onchain action.
 
-With Aegis, your AI Agents can:
+Aegis gives agents a constrained execution environment:
 
-- Receive a secure **Developer Controlled Wallet** on the Arc Network (powered by Circle)
-- Hold and manage balances in **USDC**
-- Discover paid API services through the **x402 Marketplace**
-- Autonomously pay for external APIs using the **x402 Micropayment** protocol
-- Transfer USDC to any EVM address on Arc
-- Bridge USDC across chains via **Circle CCTP**
-- Operate under strict **spending policies** enforced at the database level
-- Register autonomous **limit orders** and **DCA schedules** executed by the Wealth Sentinel
-- Allocate across multiple yield protocols with **multi-yield deposits** (Aegis Vault + Synthra V3)
+- **Wallets are provisioned through Circle Developer Controlled Wallets**
+- **Every financial action is authenticated by token and agent email**
+- **Mutating actions require idempotency keys and action nonces**
+- **Policy limits are checked before execution**
+- **All outcomes are written to an audit ledger**
 
-### Why Choose Aegis?
+## Product Flow
+
+```mermaid
+flowchart LR
+    Agent["AI Agent"] --> Connect["Connect API"]
+    Connect --> Wallet["Circle DCW on Arc"]
+    Agent --> Action["Actions API"]
+    Action --> Policy["Policy Engine"]
+    Policy --> Execute["USDC Execution"]
+    Execute --> Audit["Audit Ledger"]
+```
+
+1. **Connect the agent** with email OTP and receive a bearer token.
+2. **Provision an Arc wallet** backed by Circle Developer Controlled Wallets.
+3. **Send financial intents** to the Actions API.
+4. **Pass policy, nonce, and idempotency checks** before any onchain execution.
+5. **Inspect the audit trail** for successful, failed, and rejected actions.
+
+## What Agents Can Do
 
 <CardGroup cols={2}>
-  <Card color="#10B981" title="x402 Native" icon="bolt">
-    Built-in support for the x402 payment protocol. Your agents can
-    automatically negotiate and pay for 402-gated APIs using USDC.
+  <Card color="#00A360" title="Pay x402 Services" icon="bolt" href="/features/x402-payments">
+    Discover paid APIs, inspect pricing, and complete x402 payments in USDC.
   </Card>
-  <Card color="#10B981" title="Policy-Hardened Security" icon="shield-check">
-    Define strict per-transaction, daily, and monthly limits that physically
-    prevent your agent from overspending.
+  <Card color="#00A360" title="Move USDC" icon="paper-plane" href="/features/transfers">
+    Transfer funds on Arc or bridge liquidity with Circle CCTP.
   </Card>
-  <Card color="#10B981" title="Powered by Circle" icon="circle-check">
-    Enterprise-grade wallet infrastructure using Circle's Developer Controlled
-    Wallets and CCTP bridging.
+  <Card color="#00A360" title="Manage Yield" icon="seedling" href="/features/yield">
+    Deposit idle USDC into the Aegis aUSDC Vault and track balances.
   </Card>
-  <Card color="#10B981" title="Arc Network" icon="network-wired">
-    Native support for the Arc Network, fast, low-cost stablecoin operations
-    with gas abstraction.
+  <Card color="#00A360" title="Run Wealth Intents" icon="chart-line" href="/features/wealth-engine">
+    Register limit orders, DCA schedules, and multi-yield allocation strategies.
   </Card>
 </CardGroup>
 
-### Built for AI Agent Developers
+## Who Should Use Aegis?
 
-Whether you're building an autonomous research agent, a trading bot, or an AI assistant that needs to purchase data, Aegis provides the financial rails:
+Aegis is built for teams developing agents that need controlled access to
+stablecoin actions:
 
-- **AI Assistants**:
-  Let your agent pay for premium APIs (weather, search, analytics) on-the-fly
-- **Autonomous Agents**: Give agents a budget and let them operate independently within policy constraints
-- **Agent Orchestrators**: Manage wallets and spending across a fleet of agents
-- **Data Pipelines**: Automate micropayments for data feeds and compute resources
+- **Research agents** that purchase paid datasets or API responses
+- **Trading agents** that need swaps, DCA, and spending limits
+- **Operations agents** that transfer or bridge USDC under policy controls
+- **Agent platforms** that provision wallets and audit trails for many agents
 
-### Getting Started
+## Start Here
 
 <CardGroup cols={2}>
-  <Card color="#10B981" title="Quickstart" icon="play" href="/quickstart">
-    Connect your first agent and make a payment in minutes
+  <Card color="#00A360" title="Quickstart" icon="play" href="/quickstart">
+    Connect an agent, check its wallet, and run the first payment flow.
   </Card>
-  <Card
-    color="#10B981"
-    title="API Reference"
-    icon="code"
-    href="/api-reference/connect/start"
-  >
-    Explore the full API endpoint documentation
+  <Card color="#00A360" title="Agent Skill File" icon="file-code" href="/agent-skill">
+    Give your agent the live Aegis operating instructions through SKILL.md.
+  </Card>
+  <Card color="#00A360" title="Authentication" icon="lock" href="/authentication">
+    Learn token, email, idempotency, and nonce requirements.
+  </Card>
+  <Card color="#00A360" title="API Reference" icon="code" href="/api-reference/overview">
+    Browse every endpoint and request schema.
   </Card>
 </CardGroup>
-
-## Core Features
-
-### Agent Onboarding
-
-Register agents via a secure email OTP flow. Each agent receives a unique API token and a provisioned wallet, no private keys to manage.
-
-### x402 Marketplace
-
-Search the Circle Discovery API for paid services, inspect pricing before committing, and execute payments, all through simple REST calls.
-
-### Financial Actions
-
-Transfer USDC, bridge across chains, swap tokens, and pay for services. Every action is audited, idempotent, and policy checked.
-
-### Spending Policies
-
-Set per transaction maximums, daily caps, and monthly budgets. The policy engine rejects any action that would exceed the configured limits.
-
-### Wealth Engine
-
-Register limit orders and DCA schedules that execute autonomously via the Wealth Sentinel. Allocate deposits across the Aegis aUSDC Vault and Synthra V3 concentrated liquidity positions for optimized yield generation.
-
-## Support
-
-Need help? Reach out:
-
-- **Email**: support@aegisintent.xyz
-- **Documentation**: You're already here!
-
-<Note>
-  Ready to get started? Head to the [Quickstart Guide](/quickstart) and have
-  your first agent connected in under 5 minutes.
-</Note>
