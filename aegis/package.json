@@ -4,7 +4,7 @@
   "description": "Aegis Autonomous Wealth Engine — Security-first API for Circle Agent Wallet operations on Arc Testnet",
   "main": "index.js",
   "scripts": {
-    "test": "tsx --test test/**/*.test.ts",
+    "test": "tsx --import ./test/setup.ts --test test/*.test.ts",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
