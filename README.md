@@ -4,11 +4,11 @@
   <h2>Autonomous Wealth Engine for AI Agents</h2>
 
   <p>
-    <img src="https://img.shields.io/badge/Network-Arc%20Testnet-black?style=for-the-badge&logo=circle" alt="Arc Testnet" />
-    <img src="https://img.shields.io/badge/Smart%20Contracts-Foundry-black?style=for-the-badge" alt="Foundry" />
-    <img src="https://img.shields.io/badge/Backend-Node.js%20%7C%20Hono-black?style=for-the-badge&logo=nodedotjs" alt="Backend" />
-    <img src="https://img.shields.io/badge/Database-PostgreSQL-black?style=for-the-badge&logo=postgresql" alt="Postgres" />
-    <a href="https://dl.circleci.com/status-badge/redirect/circleci/JF2J1JY7kBmjrj7o7T7ZVD/YVPDoQpe9W3BpNi5HZXCad/tree/main"><img src="https://dl.circleci.com/status-badge/img/circleci/JF2J1JY7kBmjrj7o7T7ZVD/YVPDoQpe9W3BpNi5HZXCad/tree/main.svg?style=svg&circle-token=CCIPRJ_5HFta9y2tSFT44LRmmgHwv_a52a0b397afff0ffdab7bd8e0bad2e6c196862ef" alt="CircleCI" /></a>
+    <img src="https://img.shields.io/badge/Network-Arc%20Testnet-black?style=flat&logo=circle" alt="Arc Testnet" />
+    <img src="https://img.shields.io/badge/Smart%20Contracts-Foundry-black?style=flat" alt="Foundry" />
+    <img src="https://img.shields.io/badge/Backend-Node.js%20%7C%20Hono-black?style=flat&logo=nodedotjs" alt="Backend" />
+    <img src="https://img.shields.io/badge/Database-PostgreSQL-black?style=flat&logo=postgresql" alt="Postgres" />
+    <a href="https://dl.circleci.com/status-badge/redirect/circleci/JF2J1JY7kBmjrj7o7T7ZVD/YVPDoQpe9W3BpNi5HZXCad/tree/main"><img src="https://dl.circleci.com/status-badge/img/circleci/JF2J1JY7kBmjrj7o7T7ZVD/YVPDoQpe9W3BpNi5HZXCad/tree/main.svg?style=shield&circle-token=CCIPRJ_5HFta9y2tSFT44LRmmgHwv_a52a0b397afff0ffdab7bd8e0bad2e6c196862ef" alt="CircleCI" /></a>
   </p>
 </div>
 
