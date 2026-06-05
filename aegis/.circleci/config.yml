@@ -13,22 +13,23 @@ jobs:
       - checkout
       - run:
           name: Install Dependencies
-          command: npm install
+          command: cd aegis && npm install
       - run:
           name: Generate Prisma Client
-          command: DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npm run prisma:generate
+          command: cd aegis && DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npm run prisma:generate
       - run:
           name: Run Tests
           command: |
+            cd aegis
             mkdir -p test-results
             npx tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=test-results/junit.xml test/**/*.test.ts
       - store_test_results:
-          path: test-results
+          path: aegis/test-results
       - store_artifacts:
-          path: test-results
+          path: aegis/test-results
       - run:
           name: Build TypeScript 
-          command: NODE_OPTIONS=--max_old_space_size=2048 npm run build
+          command: cd aegis && NODE_OPTIONS=--max_old_space_size=2048 npm run build
 
   deploy-to-ec2:
     executor: node-executor
