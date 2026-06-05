@@ -21,7 +21,7 @@ jobs:
           name: Run Tests
           command: |
             mkdir -p test-results
-            npx tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=test-results/junit.xml src/**/*.test.ts test/**/*.test.ts
+            npx tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=test-results/junit.xml test/**/*.test.ts
       - store_test_results:
           path: test-results
       - store_artifacts:
