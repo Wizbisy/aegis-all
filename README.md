@@ -8,20 +8,21 @@
     <img src="https://img.shields.io/badge/Smart%20Contracts-Foundry-black?style=for-the-badge" alt="Foundry" />
     <img src="https://img.shields.io/badge/Backend-Node.js%20%7C%20Hono-black?style=for-the-badge&logo=nodedotjs" alt="Backend" />
     <img src="https://img.shields.io/badge/Database-PostgreSQL-black?style=for-the-badge&logo=postgresql" alt="Postgres" />
+
   </p>
 </div>
 
 ---
 
-## The Paradigm Shift
+## Why Aegis?
 
-**The Problem:** AI Agents are becoming highly intelligent, but they are financially paralyzed. They cannot safely hold money, they struggle to interact with complex DeFi protocols, and they cannot securely manage long-term wealth without risking user funds to hallucinated transactions.
+AI agents reason, but they don't transact safely. They can't hold funds, execute DeFi swaps, or manage portfolios without exposing user keys to hallucinated logic.
 
-**The Solution:** **Aegis** is a security-hardened, intent-based financial layer designed explicitly for AI. It acts as an unbreakable firewall between the AI agent's brain and its wallet. Agents interact with Aegis via natural intents (e.g., "Yield my idle USDC"), and Aegis executes the transactions natively on **Arc**, enforcing strict cryptographic policies, idempotency, and spending caps.
+Aegis acts as a financial firewall. Agents send intents (e.g., "deposit idle USDC for yield") to the Aegis API. Aegis executes the transaction natively on the Arc Testnet, but only after enforcing strict cryptographic policies, idempotency locks, and hard spending caps.
 
 ## Core Architecture
 
-To safely bridge intelligent agents to onchain execution, Aegis enforces a strict validation and intent-routing pipeline:
+Aegis routes intents through a strict validation pipeline before execution:
 
 ```mermaid
 flowchart TD
@@ -46,31 +47,31 @@ flowchart TD
 ```
 
 ### Built for Autonomy
-* **The `SKILL.md` Protocol**: Aegis provides a live, dynamic `SKILL.md` endpoint that can be ingested into any LLM's system prompt. This instantly teaches the agent how to natively negotiate transactions and understand platform constraints.
-* **Cryptographic Guardrails**: A strict idempotency protocol and policy engine completely prevents agents from double-spending or executing unapproved operations.
+* **The `SKILL.md` Protocol**: Aegis provides a live `SKILL.md` endpoint meant for LLM system prompts. It teaches the agent how to negotiate transactions and understand platform constraints natively.
+* **Cryptographic Guardrails**: The idempotency protocol and policy engine prevent agents from double-spending or bypassing approved limits.
 
 ### Autonomous Wealth Engine
-* **Auto-Compounding Yield**: Agents can securely deposit idle USDC into the Aegis ERC-4626 Vault to programmatically earn and compound yield over time.
-* **Smart Routing**: Advanced support for Limit Orders, order count bound DCA schedules, and multi-yield allocation strategies.
-* **Tax Loss Harvesting**: Automated FIFO and LIFO cost-basis analysis executed directly onchain.
+* **Auto-Compounding Yield**: Agents deposit idle USDC into the Aegis ERC-4626 Vault to earn auto-compounding yield.
+* **Smart Routing**: Support for limit orders, bound DCA schedules, and multi-yield allocation.
+* **Tax Loss Harvesting**: Automated FIFO cost-basis analysis and offsetting trade execution.
 
 ### Native Interoperability
-* **Arc Network Layer**: Built natively on the Arc Testnet for scalable, deterministic execution.
-* **Circle CCTP**: Instant cross-chain bridging of USDC across 7+ testnets, allowing agents to move liquidity securely.
-* **x402 Micropayments**: Agents can autonomously discover and pay for external APIs and data services directly from their Aegis balance.
+* **Arc Network Layer**: Built natively on the Arc Testnet for low-cost execution.
+* **Circle CCTP**: Cross-chain bridging of USDC across 7+ testnets.
+* **x402 Micropayments**: Agents discover and pay for external APIs directly from their Aegis balance.
 
 ---
 
 ## Monorepo Structure
 
-Because Aegis is a comprehensive full-stack infrastructure, the repository is cleanly modularized:
+The repository is modularized:
 
 | Directory | Purpose | Repository Status |
 |-----------|---------|-------------------|
-| `aegis/` | The core REST API backend and policy engine. | [Standalone Repo](https://github.com/Wizbisy/aegis) |
-| `aegis-ui/` | The Next.js control plane for administrative oversight. | Included here |
+| `aegis/` | REST API backend and policy engine. | [Standalone Repo](https://github.com/Wizbisy/aegis) |
+| `aegis-ui/` | Next.js control plane for administrative oversight. | Included here |
 | `contracts/` | Solidity smart contracts (ERC-4626 Vaults). | Included here |
-| `docs/` | The comprehensive Mintlify documentation site. | [Standalone Repo](https://github.com/Wizbisy/mintlify-docs) |
+| `docs/` | Mintlify documentation site. | [Standalone Repo](https://github.com/Wizbisy/mintlify-docs) |
 
 ---
 
@@ -80,7 +81,7 @@ Because Aegis is a comprehensive full-stack infrastructure, the repository is cl
 * **Wallets**: Circle Developer Controlled Wallets (DCW)
 * **Cross-Chain**: Circle CCTP
 * **Backend**: Node.js, TypeScript, Hono, Prisma, PostgreSQL
-* **Frontend**: Next.js 14, Tailwind CSS, Framer Motion
+* **Frontend**: Next.js 15, Tailwind CSS v4, Framer Motion
 * **Smart Contracts**: Solidity, Foundry, OpenZeppelin
 
 ---
@@ -112,9 +113,9 @@ forge test
 
 ---
 
-## Comprehensive Documentation
+## Documentation
 
-Our full API reference, architecture guides, and agent integration tutorials are hosted on our dedicated Mintlify site.
+The API reference and integration guides are hosted on Mintlify.
 
 👉 **[Read the Aegis Documentation](https://docs.aegisintent.xyz)**
 

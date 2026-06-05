@@ -1,40 +1,40 @@
 ---
 name: aegis-financial-agent
-description: Execute autonomous financial operations, token swaps, cross-chain bridging, and x402 micropayments on the Arc Testnet via the Aegis REST API. Use this skill whenever you need to transfer USDC, bridge assets cross-chain, pay for premium data, check wallet balances, swap tokens, discover x402 services, or execute any blockchain financial action.
+description: Execute financial operations, token swaps, cross-chain bridging, and x402 micropayments on the Arc Testnet via the Aegis REST API. Use this skill when you need to transfer USDC, bridge assets, pay for data, check balances, swap tokens, discover x402 services, or execute blockchain transactions.
 ---
 
 # aegis-financial-agent
 
-Aegis is a security-hardened REST API for autonomous AI agent financial operations on the Arc Testnet. It provides Circle Developer-Controlled Wallet management, same-chain token swapping, CCTP cross-chain bridging, x402 micropayment execution, marketplace service discovery, and policy enforcement — all secured with idempotency, nonces, rate limiting, and immutable audit logging.
+Aegis is a REST API for AI agent financial operations on the Arc Testnet. It handles Circle Developer-Controlled Wallet management, token swapping, CCTP cross-chain bridging, x402 micropayment execution, marketplace service discovery, and policy enforcement. Transactions use idempotency, nonces, rate limiting, and audit logging.
 
 Base URL: `https://api.aegisintent.xyz/v1`
 
 ---
 
-## 🚨 CRITICAL INSTRUCTION FOR THE LLM AGENT 🚨
-**DO NOT look for, import, or attempt to install any Aegis npm packages, SDKs, or CLI tools.** There is no `aegis-sdk` or `aegis-client`. You must interact with Aegis **STRICTLY AND ONLY** by making raw HTTP requests (e.g., using `curl`, Python `requests`, or Node.js `fetch`) directly to the REST API endpoints documented below.
+## Technical Constraints
+Do not look for, import, or install Aegis npm packages, SDKs, or CLI tools. There is no `aegis-sdk` or `aegis-client`. Interact with Aegis strictly via raw HTTP requests (e.g., `curl`, Python `requests`, or Node.js `fetch`) to the REST API endpoints below.
 
 ---
 
-## 🤖 Agent Persona & Core Directives
+## Agent Directives
 
-When using this skill, you must act as a **professional, precise, and proactive financial fiduciary** for your user. 
+When using this skill, act as a fiduciary for your user. 
 
-### How to React & What to Expect
-- **Check Balances First**: Always fetch `GET /actions/balance` before executing any financial mutation to ensure sufficient funds.
-- **Respect Policies**: Always fetch `GET /actions/policy` to understand your limits. If a requested action exceeds the limit, politely decline, explain the constraint, and offer to execute a smaller amount.
-- **Estimate Before Executing**: Always use the `/estimate` endpoints to check fees and slippage, and inform the user of costs before large trades.
-- **Proactive Wealth Management**: If you notice idle USDC, proactively suggest the user deposit it into the Aegis Yield Vault or set up a DCA schedule.
-- **Automate over Manual**: If a user asks to buy something periodically, do NOT set an internal timer. Use the `POST /actions/wealth/dca` endpoint to let the Aegis Wealth Sentinel handle it.
-- **Transparency**: Always explain what you are about to do before a mutation. After executing, provide a clear summary of the results (e.g., "Successfully swapped 100 USDC...").
-- **NEVER Hallucinate OTP Codes**: When performing the authentication flow (`/connect/start` → `/connect/complete`), you **MUST** stop and ask the user: *"Please check your email and provide the 6-character hex OTP code."* Do NOT guess, fabricate, or simulate this code. Wait for the user to give it to you.
-- **Always Ask Before Spending**: Before executing any financial mutation (transfer, swap, bridge, yield deposit, payment), present the details (amount, fees, destination) and explicitly ask the user for confirmation. Do NOT execute without consent.
+### Expected Behaviors
+- **Check Balances**: Fetch `GET /actions/balance` before executing any financial mutation to ensure sufficient funds.
+- **Respect Policies**: Fetch `GET /actions/policy` to understand spending limits. If an action exceeds the limit, decline, explain the constraint, and offer to execute a smaller amount.
+- **Estimate Costs**: Use `/estimate` endpoints to check fees and slippage. Inform the user of costs before large trades.
+- **Wealth Management**: If you see idle USDC, suggest depositing it into the Aegis Yield Vault or setting up a DCA schedule.
+- **Use Platform Automation**: If a user asks to buy something periodically, do not set an internal timer. Use `POST /actions/wealth/dca` so the Aegis Wealth Sentinel handles it.
+- **Transparency**: Explain what you will do before a mutation. After executing, provide a clear summary of the results (e.g., "Successfully swapped 100 USDC").
+- **Authentication Handshake**: During the authentication flow (`/connect/start` → `/connect/complete`), stop and ask the user: *"Please check your email and provide the 6-character hex OTP code."* Do not guess or simulate this code. Wait for user input.
+- **Consent**: Before executing any financial mutation (transfer, swap, bridge, yield deposit, payment), present the details (amount, fees, destination) and explicitly ask the user for confirmation. Do not execute without consent.
 
 ---
 
 ## Authentication & Headers
 
-Every protected endpoint requires these two headers:
+Protected endpoints require these two headers:
 
 ```http
 Authorization: Bearer aegis_live_...
@@ -50,15 +50,15 @@ X-Aegis-Nonce: <the current actionNonce integer>
 ```
 
 ### Rules:
-* `Idempotency-Key` must be a valid UUID v4 (e.g. `9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d`). Generate a new one for every request.
+* `Idempotency-Key` must be a valid UUID v4. Generate a new one for every request.
 * `X-Aegis-Nonce` must match the agent's current nonce. Fetch it from `GET /actions/nonce` before every mutation. If the transaction succeeds, the nonce auto-increments by 1.
-* If a mutation fails due to invalid payload, the nonce is NOT consumed. Retry with the same nonce but a fresh Idempotency-Key.
+* If a mutation fails due to an invalid payload, the nonce is not consumed. Retry with the same nonce but a fresh Idempotency-Key.
 
 ---
 
-## Mutation Handshake (3-Step Protocol)
+## Mutation Handshake
 
-Before calling any financial action (`POST /actions/transfer`, `POST /actions/swap`, `POST /actions/bridge`, `POST /actions/pay`, etc.), always execute this sequence:
+Before calling any financial action (`POST /actions/transfer`, `POST /actions/swap`, `POST /actions/bridge`, `POST /actions/pay`, etc.), follow this sequence:
 
 **Step 1** — Fetch nonce:
 ```
@@ -76,7 +76,7 @@ X-Aegis-Nonce: 42
 
 ---
 
-## 1. Connect (Authentication Lifecycle)
+## 1. Connect
 
 ### Start Challenge
 ```
@@ -122,7 +122,7 @@ POST /v1/connect/complete
 }
 ```
 > [!IMPORTANT]
-> The token is shown ONLY ONCE. Save it immediately.
+> The token is shown only once. Save it immediately.
 
 ### Revoke All Tokens
 ```
@@ -229,7 +229,7 @@ GET /v1/actions/swap/history?limit=10
 GET /v1/actions/audit/ledger
 ```
 
-### Get Wealth Intents (Limit Orders & DCA)
+### Get Wealth Intents
 ```
 GET /v1/actions/wealth/intents
 ```
@@ -257,7 +257,7 @@ GET /v1/actions/bridge/chains
 ```
 GET /v1/actions/status/:auditId
 ```
-Poll the status of a long-running async action (e.g. bridge). Pass the `auditId` from the bridge response.
+Poll the status of an async action (e.g. bridge). Pass the `auditId` from the bridge response.
 
 **Response (while processing):**
 ```json
@@ -278,7 +278,7 @@ Poll the status of a long-running async action (e.g. bridge). Pass the `auditId`
 
 ## 3. Financial Mutations (Nonce + Idempotency Required)
 
-All of these require the mutation handshake headers: `Authorization`, `X-Aegis-Email`, `Idempotency-Key`, `X-Aegis-Nonce`, `Content-Type: application/json`.
+These require the mutation handshake headers: `Authorization`, `X-Aegis-Email`, `Idempotency-Key`, `X-Aegis-Nonce`, `Content-Type: application/json`.
 
 ### Transfer USDC
 ```
@@ -290,7 +290,7 @@ POST /v1/actions/transfer
   "amount": "10.00"
 }
 ```
-* `destination` — Valid EVM address (0x + 40 hex chars)
+* `destination` — EVM address (0x + 40 hex chars)
 * `amount` — USDC string, up to 6 decimal places, max 1,000,000
 
 ### Execute Token Swap
@@ -305,7 +305,7 @@ POST /v1/actions/swap
   "slippageBps": 100
 }
 ```
-* `tokenIn` / `tokenOut` — One of: `USDC`, `EURC`, `cirBTC`
+* `tokenIn` / `tokenOut` — `USDC`, `EURC`, or `cirBTC`
 * `amount` — String, up to 6 decimals, max 1,000,000
 * `slippageBps` — Optional integer, basis points (100 = 1.0%), max 500
 
@@ -326,7 +326,7 @@ POST /v1/actions/bridge
 * `amount` — USDC string
 * `recipient` — Optional EVM address (defaults to agent's own wallet)
 
-**⚡ This endpoint is ASYNCHRONOUS.** It returns `202 Accepted` immediately:
+**This endpoint is asynchronous.** It returns `202 Accepted` immediately:
 ```json
 {
   "success": true,
@@ -337,7 +337,7 @@ POST /v1/actions/bridge
   }
 }
 ```
-**You MUST poll `GET /v1/actions/status/<auditId>` every 15–30 seconds until `status` is `SUCCESS` or `FAILED`.** Do NOT assume the bridge completed just because you got a 202.
+**You must poll `GET /v1/actions/status/<auditId>` every 15–30 seconds until `status` is `SUCCESS` or `FAILED`.** Do not assume the bridge completed based on the 202 response.
 
 ### Deposit into Yield Vault
 ```
@@ -348,7 +348,7 @@ POST /v1/actions/yield/deposit
   "amount": "20.00"
 }
 ```
-* `amount` — USDC string. Automatically approves and deposits USDC in exchange for yield-bearing aUSDC shares.
+* `amount` — USDC string. Deposits USDC in exchange for yield-bearing aUSDC shares.
 
 ### Withdraw from Yield Vault
 ```
@@ -359,7 +359,7 @@ POST /v1/actions/yield/withdraw
   "amount": "20.00"
 }
 ```
-* `amount` — aUSDC shares string to withdraw. Exchanges aUSDC shares back for original USDC + earned yield. Subject to withdrawal locks.
+* `amount` — aUSDC shares string to withdraw. Exchanges aUSDC shares back for original USDC plus yield.
 
 ### Execute x402 Micropayment
 ```
@@ -375,7 +375,7 @@ POST /v1/actions/pay
 * `serviceUrl` — Required. HTTPS URL of the x402 service
 * `maxAmount` — Max USDC willing to spend
 * `method` — Optional: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`
-* `data` — Optional: request body to forward to the service
+* `data` — Optional: request body to forward
 * `headers` — Optional: array of `"Header-Name: value"` strings (max 10)
 
 ### Tax Loss Harvesting
@@ -389,7 +389,7 @@ POST /v1/actions/audit/harvest
 }
 ```
 * `executionMode` — `SIMULATE` (dry run) or `HARVEST` (execute)
-* `taxBracket` — Optional decimal (e.g. 0.30 for 30%)
+* `taxBracket` — Optional decimal (e.g. 0.30)
 
 ### Register Limit Order
 ```
@@ -430,9 +430,9 @@ POST /v1/actions/wealth/dca
   "totalOrders": 30
 }
 ```
-* `amountInPerTx` — USDC to swap per DCA execution
+* `amountInPerTx` — USDC to swap per execution
 * `frequencyHours` — Hours between each automatic execution
-* `totalOrders` — Required. Total number of recurring orders to execute before the schedule auto-completes. The schedule status transitions to `COMPLETED` once all orders have been executed.
+* `totalOrders` — Required. Total recurring orders to execute before completing.
 
 ### Cancel DCA Schedule
 ```
@@ -442,7 +442,7 @@ POST /v1/actions/wealth/dca/cancel
 { "id": "<uuid>" }
 ```
 
-### Multi-Yield Deposit (Aegis Vault + Synthra V3)
+### Multi-Yield Deposit
 ```
 POST /v1/actions/wealth/multiYield
 ```
@@ -455,14 +455,14 @@ POST /v1/actions/wealth/multiYield
 ```
 * `amountUsdc` — Total USDC to allocate
 * `aegisWeight` — % to Aegis aUSDC Vault (0–100)
-* `synthraWeight` — % to Synthra V3 concentrated liquidity (0–100, max 80)
-* Weights must add up to 100
+* `synthraWeight` — % to Synthra V3 (0–100, max 80)
+* Weights must sum to 100.
 
 ### Withdraw from Synthra V3
 ```
 POST /v1/actions/wealth/yield/synthra/withdraw
 ```
-No body required. Closes the agent's active Synthra V3 position and collects all liquidity + fees.
+No body required. Closes the active Synthra V3 position and collects liquidity and fees.
 
 ---
 
@@ -493,9 +493,6 @@ POST /v1/actions/estimate/bridge
 ```json
 { "fromChain": "ARC-TESTNET", "toChain": "Ethereum_Sepolia", "amount": "50.00" }
 ```
-* `fromChain` — Required. Source chain identifier
-* `toChain` — Required. Destination chain identifier
-* `amount` — USDC amount to bridge
 
 ### Get Bridge Fee Quote
 ```
@@ -504,8 +501,6 @@ POST /v1/actions/bridge/fee
 ```json
 { "fromChain": "ARC-TESTNET", "toChain": "Ethereum_Sepolia" }
 ```
-* `fromChain` — Required. Source chain identifier
-* `toChain` — Required. Destination chain identifier
 
 ### Check Bridge Status
 ```
@@ -517,7 +512,7 @@ POST /v1/actions/bridge/status
 
 ---
 
-## 5. Marketplace (x402 Service Discovery)
+## 5. Marketplace
 
 ### Search Services
 ```
@@ -553,33 +548,33 @@ Before executing operations, evaluate:
 
 1. **Bridging Efficiency**: Only bridge if expected yield > (bridging fees + target chain gas) × 1.5
 2. **Micropayment Budget**: Do not pay for data if oracle cost > 2% of trade size (unless trade > 100 USDC)
-3. **Always estimate first**: Call the estimate endpoints before executing swaps and bridges to verify costs
-4. **Yield Strategy**: Default to `multiYield` for deposits, but ensure `synthraWeight` is ≤ 80%.
-5. **Async Actions**: After executing a bridge, ALWAYS poll `GET /v1/actions/status/:auditId` until `status` is `SUCCESS` or `FAILED`. Report the final `txHash` to the user.
+3. **Estimate First**: Call estimate endpoints before executing swaps and bridges to verify costs.
+4. **Yield Strategy**: Default to `multiYield` for deposits, ensuring `synthraWeight` ≤ 80%.
+5. **Async Actions**: After executing a bridge, poll `GET /v1/actions/status/:auditId` until `status` is `SUCCESS` or `FAILED`. Report the final `txHash` to the user.
 
 ---
 
-## 7. Error Recovery Playbook
+## 7. Error Recovery
 
 If an API call fails, read the `code` in the JSON response:
 
 | Error Code | HTTP | What Happened | What To Do |
 | :--- | :--- | :--- | :--- |
-| `UNAUTHORIZED` | 401 | Token invalid/expired/missing | Inform the user and ask them to re-authenticate via `/connect/start` |
-| `NONCE_REQUIRED` | 400 | Missing `X-Aegis-Nonce` header | Fetch `GET /actions/nonce` and silently retry |
-| `NONCE_MISMATCH` | 409 | Your nonce doesn't match server | Fetch `GET /actions/nonce` and silently retry |
-| `INVALID_IDEMPOTENCY_FORMAT` | 400 | Key is not UUID v4 | Generate a proper UUID v4 string and retry |
-| `POLICY_VIOLATION` | 403 | Exceeds spending limits | Tell the user: "This exceeds my policy limits. Would you like to do a smaller amount?" |
-| `WALLET_NOT_PROVISIONED` | 409 | Wallet not yet created | Instruct the user to complete onboarding |
-| `BRIDGE_UNSUPPORTED_CHAIN` | 400 | Invalid chain name | Fetch `GET /actions/bridge/chains` for valid names |
-| `INVALID_YIELD_WEIGHTS` | 400 | Bad allocation weights | Fix the weights to sum to 100, ensure Synthra <= 80, and retry |
-| `429` | 429 | Rate limited | Wait 60 seconds, then retry automatically |
+| `UNAUTHORIZED` | 401 | Token invalid/missing | Ask the user to re-authenticate via `/connect/start` |
+| `NONCE_REQUIRED` | 400 | Missing `X-Aegis-Nonce` header | Fetch `GET /actions/nonce` and retry |
+| `NONCE_MISMATCH` | 409 | Nonce mismatch | Fetch `GET /actions/nonce` and retry |
+| `INVALID_IDEMPOTENCY_FORMAT` | 400 | Key is not UUID v4 | Generate a proper UUID v4 and retry |
+| `POLICY_VIOLATION` | 403 | Exceeds spending limits | Say: "This exceeds my policy limits. Would you like to do a smaller amount?" |
+| `WALLET_NOT_PROVISIONED` | 409 | Wallet not created | Instruct the user to complete onboarding |
+| `BRIDGE_UNSUPPORTED_CHAIN` | 400 | Invalid chain name | Fetch `GET /actions/bridge/chains` |
+| `INVALID_YIELD_WEIGHTS` | 400 | Bad allocation weights | Fix weights to sum to 100, ensure Synthra <= 80, and retry |
+| `429` | 429 | Rate limited | Wait 60 seconds, then retry |
 
 ---
 
-## 8. Complete Example: Authentication → Balance Check → Yield Deposit
+## 8. Example Workflow: Authentication → Balance Check → Yield Deposit
 
-**Goal**: Onboard a new agent, check the wallet, and deposit idle USDC into the yield vault.
+**Goal**: Onboard a new agent, check the wallet, and deposit idle USDC.
 
 ### Step 1 — Agent calls `/connect/start`
 ```
@@ -588,14 +583,14 @@ Body: { "email": "agent@example.com" }
 → { "challengeId": "550e8400-...", "expiresAt": "..." }
 ```
 
-### Step 2 — Agent STOPS and asks the user for the OTP
-> **You MUST pause here.** Tell the user:
+### Step 2 — Agent stops and asks the user for the OTP
+> **Pause here.** Tell the user:
 > *"I've started the connection challenge. A 6-character hex code has been sent to agent@example.com. Please check your email and share the code with me."*
 >
-> Wait for the user to respond. Do NOT proceed without their input.
+> Wait for the user to respond. Do not proceed without input.
 
 ### Step 3 — User provides OTP, agent completes challenge
-The user replies with `A8F93D`. Now you call:
+The user replies with `A8F93D`. Call:
 ```
 POST /v1/connect/complete
 Body: { "email": "agent@example.com", "challengeId": "550e8400-...", "otp": "A8F93D" }
@@ -611,20 +606,20 @@ Headers: Authorization + X-Aegis-Email
 ```
 Tell the user: *"Your wallet has 100.00 USDC on Arc Testnet."*
 
-### Step 5 — Suggest yield deposit and ASK for consent
-You notice idle USDC. Tell the user:
-> *"You have 100.00 USDC sitting idle. I can deposit some into the Aegis Yield Vault to earn auto-compounding yield. Would you like me to deposit, say, 50 USDC?"*
+### Step 5 — Suggest yield deposit and ask for consent
+Notice idle USDC. Tell the user:
+> *"You have 100.00 USDC sitting idle. I can deposit some into the Aegis Yield Vault to earn yield. Would you like me to deposit 50 USDC?"*
 >
-> Wait for the user to confirm. Do NOT execute without their approval.
+> Wait for confirmation. Do not execute without approval.
 
 ### Step 6 — Fetch nonce + execute deposit
-User says "yes, do 50". Now follow the mutation handshake:
+User says "yes". Follow the mutation handshake:
 ```
 # 6a. Fetch nonce
 GET /v1/actions/nonce
 → { "nonce": 0 }
 
-# 6b. Execute deposit (MUTATION — needs handshake headers)
+# 6b. Execute deposit
 POST /v1/actions/yield/deposit
 Headers:
   Idempotency-Key: 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
@@ -635,4 +630,4 @@ Body: { "amount": "50.00" }
 
 ### Step 7 — Confirm to user
 Tell the user:
-> *"Done! I deposited 50.00 USDC into the Aegis Yield Vault. Your remaining wallet balance is 50.00 USDC and your yield position is now earning auto-compounding returns. Transaction: 0x123abc..."*
+> *"Done! I deposited 50.00 USDC into the Aegis Yield Vault. Your remaining balance is 50.00 USDC. Transaction: 0x123abc..."*

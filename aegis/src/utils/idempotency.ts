@@ -5,11 +5,11 @@ import { db } from '../db/prisma.js';
 import { AppError } from './errors.js';
 import { getRequestId } from './requestid.js';
 
-function hash(value: string) {
+export function hash(value: string) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function stableJson(value: unknown): string {
+export function stableJson(value: unknown): string {
   if (value === null || typeof value !== 'object') {
     return JSON.stringify(value);
   }

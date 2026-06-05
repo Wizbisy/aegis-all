@@ -54,12 +54,12 @@ async function handleActionError(c: any, auditId: string, idempotencyId: string,
 
 export const actionsRouter = new Hono<AppBindings>();
 
-const transferSchema = z.object({
+export const transferSchema = z.object({
   destination: evmAddressSchema,
   amount: usdcAmountSchema,
 });
 
-const paySchema = z.object({
+export const paySchema = z.object({
   serviceUrl: serviceUrlSchema,
   maxAmount: usdcAmountSchema,
   method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH']).optional(),
@@ -67,19 +67,19 @@ const paySchema = z.object({
   headers: z.array(outboundHeaderSchema).max(10).optional(),
 });
 
-const bridgeSchema = z.object({
+export const bridgeSchema = z.object({
   fromChain: z.string().min(2).max(40),
   toChain: z.string().min(2).max(40),
   recipient: evmAddressSchema.optional(),
   amount: usdcAmountSchema,
 });
 
-const bridgeFeeSchema = z.object({
+export const bridgeFeeSchema = z.object({
   fromChain: z.string().min(2).max(40),
   toChain: z.string().min(2).max(40),
 });
 
-const bridgeStatusSchema = z.object({
+export const bridgeStatusSchema = z.object({
   txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/),
 });
 
