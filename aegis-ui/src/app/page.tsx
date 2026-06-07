@@ -335,19 +335,7 @@ export default function PublicLandingPage() {
 
         <section className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[1fr_520px] lg:py-20">
           <div className="max-w-3xl">
-            <div className="flex items-center gap-2 mb-6 animate-fade-up delay-100">
-              <span className="relative flex h-2 w-2">
-                <span
-                  className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                    isDark ? 'bg-[#00F396]' : 'bg-[#00C278]'
-                  }`}
-                />
-                <span
-                  className={`relative inline-flex rounded-full h-2 w-2 ${
-                    isDark ? 'bg-[#00F396]' : 'bg-[#00C278]'
-                  }`}
-                />
-              </span>
+            <div className="mb-6 animate-fade-up delay-100">
               <span className={`text-[10px] font-bold font-mono tracking-[0.25em] uppercase ${s.faint}`}>
                 Autonomous Financial Operations Center
               </span>
@@ -408,7 +396,7 @@ export default function PublicLandingPage() {
                 </h2>
               </div>
               <span className={`rounded-full px-3 py-1 text-[10px] font-bold font-mono tracking-wider ${s.accentBg}`}>
-                {loading ? '● SYNC' : error ? '○ PREVIEW' : '● LIVE'}
+                {loading ? 'SYNC' : error ? 'PREVIEW' : 'LIVE'}
               </span>
             </div>
 
