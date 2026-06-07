@@ -588,14 +588,14 @@ export default function PublicLandingPage() {
             </a>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[680px] border-collapse text-left text-xs font-mono">
+          <div className="w-full">
+            <table className="w-full border-collapse text-left text-xs font-mono">
               <thead>
                 <tr className={`border-b ${s.border} ${s.faint} ${s.softSurface}`}>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.14em]">Spending Field</th>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.14em]">Data Type</th>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.14em]">Default Limit (USDC)</th>
-                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.14em]">Verification Enforcement</th>
+                  <th className="px-4 sm:px-6 py-4 sm:py-5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest sm:tracking-[0.14em]">Spending Field</th>
+                  <th className="hidden sm:table-cell px-6 py-5 text-[10px] font-black uppercase tracking-[0.14em]">Data Type</th>
+                  <th className="px-4 sm:px-6 py-4 sm:py-5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest sm:tracking-[0.14em]">Default Limit (USDC)</th>
+                  <th className="hidden lg:table-cell px-6 py-5 text-[10px] font-black uppercase tracking-[0.14em]">Verification Enforcement</th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${isDark ? 'divide-[#16171F]' : 'divide-[#E2E4E9]'}`}>
@@ -604,12 +604,18 @@ export default function PublicLandingPage() {
                     key={row.field}
                     className={`policy-row transition-colors ${isDark ? 'hover:bg-[#12131A]/40' : 'hover:bg-[#F8F9FA]/60'}`}
                   >
-                    <td className={`py-4.5 px-6 font-bold ${s.text}`}>{row.field}</td>
-                    <td className="py-4.5 px-6">
+                    <td className={`py-4 px-4 sm:py-4.5 sm:px-6 font-bold align-top sm:align-middle ${s.text}`}>
+                      <div className="flex flex-col gap-1">
+                        <span>{row.field}</span>
+                        <span className={`sm:hidden inline-block px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 w-fit text-[9px] ${s.muted}`}>DECIMAL</span>
+                        <span className={`lg:hidden mt-1 text-[10px] leading-relaxed font-normal ${s.muted}`}>{row.scope}</span>
+                      </div>
+                    </td>
+                    <td className="hidden sm:table-cell py-4.5 px-6 align-top sm:align-middle">
                       <span className={`px-2 py-0.5 rounded font-bold text-[9px] ${s.tableCellBadge}`}>DECIMAL</span>
                     </td>
-                    <td className={`py-4.5 px-6 font-bold ${s.text}`}>{row.limit}</td>
-                    <td className={`py-4.5 px-6 ${s.muted}`}>{row.scope}</td>
+                    <td className={`py-4 px-4 sm:py-4.5 sm:px-6 font-bold whitespace-nowrap align-top sm:align-middle ${s.text}`}>{row.limit}</td>
+                    <td className={`hidden lg:table-cell py-4.5 px-6 leading-relaxed align-top sm:align-middle ${s.muted}`}>{row.scope}</td>
                   </tr>
                 ))}
               </tbody>
