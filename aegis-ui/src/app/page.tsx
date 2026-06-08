@@ -3,8 +3,19 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Toaster, toast } from 'sonner';
 import { getDashboardData } from './actions';
 import MouseTrail from './components/MouseTrail';
+import { Icon } from './components/Icon';
+import {
+  pipeline,
+  capabilities,
+  policyRows,
+  executionRoute,
+  skillUrl,
+  docsUrl,
+  displayFont,
+} from './constants';
 
 type DashboardStats = {
   agents?: number;
@@ -33,64 +44,6 @@ type StatCard = {
   detail?: StatDetail;
 };
 
-const skillUrl = 'https://api.aegisintent.xyz/SKILL.md';
-const docsUrl = 'https://docs.aegisintent.xyz';
-
-const displayFont = 'var(--font-display-family), var(--font-plus-jakarta), sans-serif';
-
-const pipeline = [
-  {
-    step: '01',
-    label: 'Connect',
-    title: 'Integrate SKILL.md',
-    body: 'Provide your AI agent with the public SKILL.md API resource instructions. The agent will parse platform rules, schemas, and action constraints to negotiate transactions natively.',
-  },
-  {
-    step: '02',
-    label: 'Authorize',
-    title: 'Agent Authorization',
-    body: 'Link agent access seamlessly through secure, temporary session tokens. Authorize wallets safely without exposing master private keys.',
-  },
-  {
-    step: '03',
-    label: 'Execute',
-    title: 'Execute with Guardrails',
-    body: 'Run transactions with complete confidence. The Aegis Policy Engine verifies every single action against your active rules, instantly rejecting unauthorized operations.',
-  },
-];
-
-const capabilities = [
-  {
-    title: 'x402 payment execution',
-    body: 'Agents can discover paid APIs, inspect payment requirements, and pay with USDC through a single guarded action.',
-    tag: 'Marketplace',
-  },
-  {
-    title: 'Wealth Sentinel',
-    body: 'Background automation monitors limit orders and DCA schedules, then executes matching intents when conditions are met.',
-    tag: 'Automation',
-  },
-  {
-    title: 'Multi-yield allocation',
-    body: 'Idle USDC can be split between the Aegis aUSDC Vault and Synthra V3 concentrated liquidity positions.',
-    tag: 'Yield',
-  },
-  {
-    title: 'Cross-chain liquidity',
-    body: 'CCTP support lets agents bridge USDC across supported testnets while keeping policy checks in front of execution.',
-    tag: 'CCTP',
-  },
-];
-
-const policyRows = [
-  { field: 'perTxLimitUsdc', limit: '$10,000.00', scope: 'Enforced on every transaction action request.' },
-  { field: 'dailyLimitUsdc', limit: '$50,000.00', scope: 'Rolling 24-hour aggregate volume control.' },
-  { field: 'weeklyLimitUsdc', limit: '$200,000.00', scope: 'Rolling 7-day aggregate volume control.' },
-  { field: 'monthlyLimitUsdc', limit: '$500,000.00', scope: 'Rolling 30-day aggregate volume control.' },
-];
-
-const executionRoute = ['Auth', 'Idempotency', 'Policy', 'Circle DCW', 'Audit'];
-
 function formatNumber(value: number | string | undefined) {
   return Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
@@ -102,46 +55,36 @@ function formatCurrency(value: number | string | undefined) {
   })}`;
 }
 
-function Icon({
-  name,
-  className,
-}: {
-  name:
-    | 'sun'
-    | 'moon'
-    | 'copy'
-    | 'external'
-    | 'agents'
-    | 'transactions'
-    | 'vault'
-    | 'usdc'
-    | 'chevron';
-  className?: string;
-}) {
-  const paths: Record<string, string> = {
-    sun: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z',
-    moon: 'M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z',
-    copy: 'M8 8h10v12H8z M6 16H4V4h12v2',
-    external: 'M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14',
-    agents: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
-    transactions: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
-    vault: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
-    usdc: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-    chevron: 'M9 5l7 7-7 7',
-  };
-
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={paths[name]} />
-    </svg>
-  );
-}
+const s = {
+  page: 'min-h-screen bg-[#FAFBFD] dark:bg-[#050507] text-[#1E2026] dark:text-[#FAFBFD] selection:bg-[#00C278] dark:selection:bg-[#00F396] selection:text-white dark:selection:text-[#050507]',
+  surface: 'border-[#E2E4E9] dark:border-[#1C1D24] bg-white dark:bg-[#0D0E12]',
+  softSurface: 'border-[#E2E4E9] dark:border-[#1C1D24] bg-[#F8F9FA] dark:bg-[#07080A]',
+  text: 'text-[#1E2026] dark:text-[#FAFBFD]',
+  muted: 'text-[#5C6170] dark:text-[#8F94A6]',
+  faint: 'text-[#8A91A3] dark:text-[#606578]',
+  accent: 'text-[#00A360] dark:text-[#00F396]',
+  accentGlow: 'text-[#00A360] dark:text-[#00F396] dark:drop-shadow-[0_0_40px_rgba(0,243,150,0.2)]',
+  accentBg: 'bg-[#00C278]/10 dark:bg-[#00F396]/10 text-[#00A360] dark:text-[#00F396]',
+  neutralBg: 'bg-[#E2E4E9] dark:bg-[#1C1D24] text-[#1E2026] dark:text-[#FAFBFD]',
+  border: 'border-[#E2E4E9] dark:border-[#1C1D24]',
+  divider: 'bg-[#E2E4E9] dark:bg-[#1C1D24]',
+  dividerHover: 'group-hover:bg-[#C8CDD6] dark:group-hover:bg-[#2C2E3B]',
+  buttonPrimary: 'bg-[#00A360] dark:bg-[#00F396] text-white dark:text-[#050507] hover:bg-[#00C278] dark:hover:bg-[#4BFFB9]',
+  buttonSecondary: 'border-[#E2E4E9] dark:border-[#1C1D24] bg-white dark:bg-[#0D0E12] text-[#1E2026] dark:text-[#FAFBFD] hover:border-[#C8CDD6] dark:hover:border-[#2C2E3B]',
+  navLink: 'text-[#5C6170] dark:text-[#8F94A6] hover:text-[#0F1115] dark:hover:text-white',
+  tableCellBadge: 'bg-[#E6F9F0] dark:bg-[#0A2A1E] text-[#00A360] dark:text-[#00F396]',
+  cardHover: 'hover:border-[#C8CDD6] dark:hover:border-[#2C2E3B] hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-2xl',
+  glowBlob: 'bg-black/[0.02] dark:bg-white/[0.02] group-hover:bg-black/[0.04] dark:group-hover:bg-white/[0.04]',
+  statGlowBlob: 'bg-black/[0.02] dark:bg-white/[0.02] group-hover:bg-black/[0.05] dark:group-hover:bg-white/[0.06]',
+  routeDotInactive: 'bg-[#C8CDD6] dark:bg-[#2C2E3B]',
+  routeDotActive: 'bg-[#00A360] dark:bg-[#00F396]',
+  tagBar: 'bg-[#C8CDD6] dark:bg-[#2C2E3B]',
+};
 
 export default function PublicLandingPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
@@ -169,68 +112,13 @@ export default function PublicLandingPage() {
       } catch (err: unknown) {
         console.error('Failed to load public stats:', err);
         setError('Live connection to Aegis Wealth Engine backend is currently establishing.');
+        toast.error('Connection failed. Retrying...');
       } finally {
         setLoading(false);
       }
     }
     loadStats();
   }, []);
-
-  const isDark = theme === 'dark';
-
-  const s = {
-    page: isDark
-      ? 'min-h-screen bg-[#050507] text-[#FAFBFD] selection:bg-[#00F396] selection:text-[#050507]'
-      : 'min-h-screen bg-[#FAFBFD] text-[#1E2026] selection:bg-[#00C278] selection:text-white',
-    surface: isDark
-      ? 'border-[#1C1D24] bg-[#0D0E12]'
-      : 'border-[#E2E4E9] bg-white',
-    softSurface: isDark
-      ? 'border-[#1C1D24] bg-[#07080A]'
-      : 'border-[#E2E4E9] bg-[#F8F9FA]',
-    text: isDark ? 'text-[#FAFBFD]' : 'text-[#1E2026]',
-    muted: isDark ? 'text-[#8F94A6]' : 'text-[#5C6170]',
-    faint: isDark ? 'text-[#606578]' : 'text-[#8A91A3]',
-    accent: isDark ? 'text-[#00F396]' : 'text-[#00A360]',
-    accentGlow: isDark
-      ? 'text-[#00F396] drop-shadow-[0_0_40px_rgba(0,243,150,0.2)]'
-      : 'text-[#00A360]',
-    accentBg: isDark
-      ? 'bg-[#00F396]/10 text-[#00F396]'
-      : 'bg-[#00C278]/10 text-[#00A360]',
-    neutralBg: isDark
-      ? 'bg-[#1C1D24] text-[#FAFBFD]'
-      : 'bg-[#E2E4E9] text-[#1E2026]',
-    border: isDark ? 'border-[#1C1D24]' : 'border-[#E2E4E9]',
-    divider: isDark ? 'bg-[#1C1D24]' : 'bg-[#E2E4E9]',
-    dividerHover: isDark
-      ? 'group-hover:bg-[#2C2E3B]'
-      : 'group-hover:bg-[#C8CDD6]',
-    buttonPrimary: isDark
-      ? 'bg-[#00F396] text-[#050507] hover:bg-[#4BFFB9]'
-      : 'bg-[#00A360] text-white hover:bg-[#00C278]',
-    buttonSecondary: isDark
-      ? 'border-[#1C1D24] bg-[#0D0E12] text-[#FAFBFD] hover:border-[#2C2E3B]'
-      : 'border-[#E2E4E9] bg-white text-[#1E2026] hover:border-[#C8CDD6]',
-    navLink: isDark
-      ? 'text-[#8F94A6] hover:text-white'
-      : 'text-[#5C6170] hover:text-[#0F1115]',
-    tableCellBadge: isDark
-      ? 'bg-[#0A2A1E] text-[#00F396]'
-      : 'bg-[#E6F9F0] text-[#00A360]',
-    cardHover: isDark
-      ? 'hover:border-[#2C2E3B] hover:-translate-y-1 hover:shadow-2xl'
-      : 'hover:border-[#C8CDD6] hover:-translate-y-1 hover:shadow-lg',
-    glowBlob: isDark
-      ? 'bg-white/[0.02] group-hover:bg-white/[0.04]'
-      : 'bg-black/[0.02] group-hover:bg-black/[0.04]',
-    statGlowBlob: isDark
-      ? 'bg-white/[0.02] group-hover:bg-white/[0.06]'
-      : 'bg-black/[0.02] group-hover:bg-black/[0.05]',
-    routeDotInactive: isDark ? 'bg-[#2C2E3B]' : 'bg-[#C8CDD6]',
-    routeDotActive: isDark ? 'bg-[#00F396]' : 'bg-[#00A360]',
-    tagBar: isDark ? 'bg-[#2C2E3B]' : 'bg-[#C8CDD6]',
-  };
 
   const statCards: StatCard[] = [
     {
@@ -270,35 +158,28 @@ export default function PublicLandingPage() {
     localStorage.setItem('aegis-theme', nextTheme);
   };
 
-  const handleCopy = async (text: string, key: string) => {
+  const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(key);
-      window.setTimeout(() => setCopied(null), 2000);
+      toast.success('Agent prompt copied to clipboard!');
     } catch (err) {
       console.error('Failed to copy text:', err);
+      toast.error('Failed to copy text.');
     }
   };
 
   return (
     <main className={`${s.page} overflow-x-hidden transition-colors duration-300 noise-overlay`}>
+      <Toaster position="bottom-right" theme={theme} />
       <MouseTrail />
       <div
-        className={`pointer-events-none fixed inset-0 ${
-          isDark
-            ? 'bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)]'
-            : 'bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)]'
-        } bg-size-[48px_48px]`}
+        className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-size-[48px_48px]"
       />
       <div
-        className={`pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[800px] max-w-[100vw] h-[500px] bg-linear-to-b ${
-          isDark ? 'from-white/[0.02]' : 'from-black/[0.01]'
-        } to-transparent rounded-full blur-[120px]`}
+        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[800px] max-w-[100vw] h-[500px] bg-linear-to-b from-black/[0.01] dark:from-white/[0.02] to-transparent rounded-full blur-[120px]"
       />
       <div
-        className={`pointer-events-none absolute bottom-0 right-[10%] w-[600px] max-w-[100vw] h-[600px] bg-linear-to-tr ${
-          isDark ? 'from-[#3b82f6]/[0.03]' : 'from-[#3b82f6]/[0.02]'
-        } to-transparent rounded-full blur-[140px]`}
+        className="pointer-events-none absolute bottom-0 right-[10%] w-[600px] max-w-[100vw] h-[600px] bg-linear-to-tr from-[#3b82f6]/[0.02] dark:from-[#3b82f6]/[0.03] to-transparent rounded-full blur-[140px]"
       />
 
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-10 lg:py-16">
@@ -310,7 +191,7 @@ export default function PublicLandingPage() {
               width={100}
               height={24}
               priority
-              className={`h-6 w-auto object-contain transition-all duration-300 ${isDark ? '' : 'invert'}`}
+              className="h-6 w-auto object-contain transition-all duration-300 invert dark:invert-0"
             />
           </Link>
 
@@ -328,7 +209,7 @@ export default function PublicLandingPage() {
               className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-150 cursor-pointer active:scale-95 ${s.buttonSecondary}`}
               aria-label="Toggle theme"
             >
-              <Icon name={isDark ? 'sun' : 'moon'} className="h-4 w-4" />
+              <Icon name={theme === 'dark' ? 'sun' : 'moon'} className="h-4 w-4" />
             </button>
           </nav>
         </header>
@@ -357,11 +238,11 @@ export default function PublicLandingPage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row animate-fade-up delay-400">
               <button
-                onClick={() => handleCopy(`get started on aegis: ${skillUrl}`, 'prompt')}
+                onClick={() => handleCopy(`get started on aegis: ${skillUrl}`)}
                 className={`btn-glow inline-flex h-12 items-center justify-center gap-2.5 rounded-lg px-6 text-sm font-bold transition cursor-pointer active:scale-[0.97] ${s.buttonPrimary}`}
               >
                 <Icon name="copy" className="h-4 w-4" />
-                {copied === 'prompt' ? 'Prompt copied!' : 'Copy agent prompt'}
+                Copy agent prompt
               </button>
               <a
                 href={docsUrl}
@@ -385,7 +266,7 @@ export default function PublicLandingPage() {
             </div>
           </div>
 
-          <aside className={`rounded-2xl border console-border scanlines ${s.surface} shadow-2xl shadow-black/10 overflow-hidden animate-slide-in-right delay-300`}>
+          <aside className={`rounded-2xl border console-border scanlines ${s.surface} shadow-2xl shadow-black/10 dark:shadow-none overflow-hidden animate-slide-in-right delay-300`}>
             <div className={`flex items-center justify-between border-b ${s.border} px-5 py-4`}>
               <div>
                 <div className={`text-[10px] font-bold font-mono uppercase tracking-[0.18em] ${s.faint}`}>
@@ -423,24 +304,32 @@ export default function PublicLandingPage() {
                   </div>
                   <div className={`mt-4 font-mono text-2xl font-black tracking-tight ${s.text}`}>
                     {loading ? (
-                      <div className="w-5 h-5 border-2 border-transparent border-t-[#00F396] rounded-full animate-spin" />
+                      <div className="h-8 w-24 rounded animate-pulse bg-black/10 dark:bg-white/10" />
                     ) : (
                       card.value
                     )}
                   </div>
-                  {card.detail && !loading && (
+                  {card.detail && (
                     <div className={`flex justify-between text-[10px] font-mono border-t ${s.border} pt-2 mt-2`}>
                       <div className="flex flex-col">
                         <span className={s.faint}>{card.detail.left.label}</span>
-                        <span className={`font-bold ${card.detail.left.color || s.text}`}>
-                          {card.detail.left.value}
-                        </span>
+                        {loading ? (
+                          <div className="h-3 w-16 mt-1 rounded animate-pulse bg-black/10 dark:bg-white/10" />
+                        ) : (
+                          <span className={`font-bold ${card.detail.left.color || s.text}`}>
+                            {card.detail.left.value}
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-col text-right">
                         <span className={s.faint}>{card.detail.right.label}</span>
-                        <span className={`font-bold ${card.detail.right.color || s.text}`}>
-                          {card.detail.right.value}
-                        </span>
+                        {loading ? (
+                          <div className="h-3 w-16 mt-1 rounded animate-pulse bg-black/10 dark:bg-white/10" />
+                        ) : (
+                          <span className={`font-bold ${card.detail.right.color || s.text}`}>
+                            {card.detail.right.value}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -468,7 +357,6 @@ export default function PublicLandingPage() {
                   </div>
                 ))}
               </div>
-              {error && <p className={`mt-4 text-xs font-mono ${s.muted}`}>{error}</p>}
             </div>
           </aside>
         </section>
@@ -586,11 +474,11 @@ export default function PublicLandingPage() {
                   <th className="hidden lg:table-cell px-6 py-5 text-[10px] font-black uppercase tracking-[0.14em]">Verification Enforcement</th>
                 </tr>
               </thead>
-              <tbody className={`divide-y ${isDark ? 'divide-[#16171F]' : 'divide-[#E2E4E9]'}`}>
+              <tbody className="divide-y divide-[#E2E4E9] dark:divide-[#16171F]">
                 {policyRows.map((row) => (
                   <tr
                     key={row.field}
-                    className={`policy-row transition-colors ${isDark ? 'hover:bg-[#12131A]/40' : 'hover:bg-[#F8F9FA]/60'}`}
+                    className="policy-row transition-colors hover:bg-[#F8F9FA]/60 dark:hover:bg-[#12131A]/40"
                   >
                     <td className={`py-4 px-4 sm:py-4.5 sm:px-6 font-bold align-top sm:align-middle ${s.text}`}>
                       <div className="flex flex-col gap-1">

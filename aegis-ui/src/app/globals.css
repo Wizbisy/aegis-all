@@ -5,6 +5,8 @@
   --font-display: var(--font-display-family);
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #FAFBFD;
   --foreground: #1E2026;
